@@ -1,4 +1,5 @@
 import numpy as np
+import itertools
 
 class Feature:
 
@@ -47,6 +48,9 @@ class DiscSingleFeaturePredicate(SingleFeaturePredicate):
             return False
         if self.feature == predicate.feature:
             return True
+
+    def get_obj(self):
+        return {self.feature.feature: self.values}
 
 
 class ContSingleFeaturePredicate(SingleFeaturePredicate):
@@ -122,6 +126,9 @@ class ContSingleFeaturePredicate(SingleFeaturePredicate):
             self.merge_interval_lists(self.intervals.copy(), predicate.intervals.copy()))
         return len(merged_intervals) < len(self.intervals) + len(predicate.intervals)
 
+    def get_obj(self):
+        return {self.feature.feature: self.intervals}
+
     def __repr__(self):
         return f"{self.feature.feature}: {self.intervals}"
 
@@ -179,6 +186,9 @@ class CompoundPredicate():
         eq = np.array([np.all(self.predicates[f].selected_index == predicate.predicates[f].selected_index)
                        for f in self.features]).astype(int)
         return sum(adj) == 1 and sum(eq) == len(self.features) - 1
+
+    def get_obj(self):
+        return dict([(p.feature.feature, p.intervals) for p in self.base_predicates])
 
     def __repr__(self):
         return '{' + f"{list(self.predicates.values())}"[1:-1] + '}'

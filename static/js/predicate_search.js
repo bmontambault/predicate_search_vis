@@ -8,6 +8,7 @@ function predicate_search(targets, index){
             var response = JSON.parse(resp);
             if (response != null){
                 var predicates = response["predicates"]
+                console.log(predicates)
                 //now populate small multiples
             }
         }

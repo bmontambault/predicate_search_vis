@@ -26,10 +26,11 @@ def predicate_search():
     request_data = request.get_json(force=True)
     targets = request_data['targets']
     index = request_data['index']
-    raw_predicates = clf.search(targets)
 
-    #transform predicates to whatever we'll be plotting
-    predicates = raw_predicates
+    print(targets, index)
+    raw_predicates = clf.search()
+    predicates = [p.get_obj() for p in raw_predicates]
+    print(predicates)
     return json.dumps({'predicates': predicates})
 
 if __name__ == "__main__":
