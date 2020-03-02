@@ -8,6 +8,8 @@ data = pd.read_csv('static/data/norm_data.csv')
 clf = PredicateAnomalyDetection()
 clf.fit(data)
 
+dummy = data.reset_index().to_dict('records')
+
 app = Flask(__name__)
 app.secret_key = ''
 app.config['SESSION_TYPE'] = 'filesystem'
@@ -15,7 +17,7 @@ app.config['SESSION_TYPE'] = 'filesystem'
 @app.route('/')
 def index():
 
-    return render_template('index.html')
+    return render_template('index.html', dummy=dummy)
 
 
 @app.route('/predicate_search', methods=['GET', 'POST'])
