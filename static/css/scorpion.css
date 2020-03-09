@@ -58,8 +58,9 @@ footer {
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+	align-content: center;
 	height: 100%;
-	width: 25%;
+	width: 30%;
 }
 
 #control-container {
@@ -88,6 +89,10 @@ footer {
 
 }
 
+.labels {
+	z-index: 100;
+}
+
 #controls {
 	height: 20px;
 	width: 80%;
@@ -95,10 +100,10 @@ footer {
 }
 
 #bars {
-	height: 82%;
-	width: 98%;
-	padding-left: 1%;
-	vertical-align: center;
+	align-self: right;
+	height: 90%;
+	width: 100%;
+	overflow-x: hidden;
 	overflow-y: auto;
 }
 
@@ -107,7 +112,7 @@ footer {
 	flex-direction: column;
 	align-items: center;
 	height: 99%;
-	width: 55%;
+	width: 50%;
 	justify-content: flex-start;
 }
 
@@ -171,7 +176,7 @@ footer {
 	align-items: center;
 	justify-content: center;
 	height: 100%;
-	width: 20%;
+	width: 18%;
 }
 
 
@@ -190,7 +195,6 @@ footer {
 #sml-mpls {
 	height: 82%;
 	width: 96%;
-	padding-right: ;
 	vertical-align: center;
 	overflow-y:auto;
 }
@@ -229,9 +233,20 @@ footer {
 }
 
 
-.axis path,
-.axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
+.go {
+	width: 15%;
+	height: 100%;
+	margin-left: 45%;
+	border-radius: 3px;
+	background-color: rgba(125, 125, 125, 1);
+	color:white;
+}
+
+.go:hover {
+	width: 15%;
+	height: 100%;
+	margin-left: 45%;
+	border-radius: 3px;
+	background-color: rgba(125, 125, 125, .7);
+	color:white;
 }

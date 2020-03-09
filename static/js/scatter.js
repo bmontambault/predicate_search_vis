@@ -1,6 +1,12 @@
 
 console.log("Generating the scatter plot/projection...");
 
+function itemID(d) {
+	var rid = d.readings;
+	id = rid = rid.substring(1);
+	return id;
+}
+
 // grab the dimensions of the div we want
 var canvasW = $("#scatter").width();
 var canvasH = $("#scatter").height();
@@ -34,15 +40,15 @@ var svg = d3.select("#scatter")
 				.style("border", "2px solid #e8e8e8")
 				.style("border-radius", "5px")
 				.append("g")
-					.attr("transform", "translate(" + (margin.left+10) + ", " + margin.top + ")");
+					.attr("transform", "translate(" + (margin.left+10) + ", " + margin.top + ")")
 
 	// draw a point for each data point
 	svg.selectAll("circle")
 			.data(dummy)
 			.enter()
 			.append("circle")
-				.attr("id", function(d, i) {
-					return i;
+				.attr("id", function(d) {
+					itemID(d);
 				})
 				.attr("r", "4px")
 				.attr("cx", function(d) {
@@ -52,69 +58,20 @@ var svg = d3.select("#scatter")
 					return (y(+(d.t2)))
 				})
 				.style("fill", "gray")
-				.on("mouseover", function(d) {   // mouseover effect to highlight
-					d3.select(this).style("fill", "blue")
-									.style("r", 7);
-
-					// mouseover effect to highlight the rects in the barcode charts
-					var currid = this.id;
-					d3.selectAll("rect").style("fill", function(d) {
-						if (this.id == currid) {
-							return colorUp(d);
-						} else {
-							return "#e8e8e8"; 
-						}
-					})
-				})
-				.on("mouseout", function(d) {
-
-					d3.select(this).style("fill", "gray")
-									.style("r", 4);
-					var currid = this.id;
-
-					d3.selectAll("rect").style("fill", function(d) {
-						return colorUp(d);
-					})
-				})
-
-
-//I commented out these axes since it'll eventually be a projection, but keeping for now
-
-	// svg.append("g")
-	// 	.attr("class", "xaxis")
-	// 	.attr("transform", "translate(0," + (height-30) + ")")
-	// 	.call(xAxis)
-	// 	.append("text")
-	// 		.attr("class", "label")
-	// 		.attr("x", width-40)
-	// 		.attr("y", 0)
-	// 		.style("text-anchor", "end")
-	// 		.text("X Axis")
-	// 		.style("color", "blue")
-
-	//   svg.append("g")
-	//       .attr("class", "yaxis")
-	//       .attr("transform", "translate(-5,-5)")
-	//       .call(yAxis)
-	//     .append("text")
-	//       .attr("class", "label")
-	//       .attr("transform", "rotate(-90)")
-	//       .attr("y", 0)
-	//       .attr("dy", ".71em")
-	//       .style("text-anchor", "end")
-
 
 // update function. Anytime a change is made the data, the vis will get redrawn
 // as long as you give it the updated data.
 
 function updateScatter(data) {
 
-	console.log("updating scatter plot");
 	var svgCircles = d3.selectAll("circle")
 						.data(data)
 
 		svgCircles.enter()
 			.append("circle")
+			.attr("id", function(d) {
+				return itemID(d);
+			})
 			.attr("r", "4px")
 				.attr("cx", function(d) {
 					return (x(+(d.t1)));
@@ -125,5 +82,66 @@ function updateScatter(data) {
 				.style("fill", "blue");
 
 		svgCircles.exit().remove();
+}
+
+selected = [];
+svg.append("g")
+      .call(d3.brush().extent([[0, 0], [width, height]])
+      	.on("brush", brushed)
+      	.on("end", brushended));
+
+
+function brushed() {
+	var s = d3.event.selection,
+				x0 = s[0][0],
+				y0 = s[0][1],
+				dx = s[1][0],
+				dy = s[1][1];
+
+
+	d3.selectAll("circle")
+			.style("fill", function(d) {
+				if (x(+d.t1) >= x0 && x(+d.t1) <= dx && y(+d.t2) >= y0 && y(+d.t2) <= dy) {
+					return "blue";
+				} else {
+					return "gray";
+				}
+			})
+			.attr("class", function(d) {
+				if (x(+d.t1) >= x0 && x(+d.t1) <= dx && y(+d.t2) >= y0 && y(+d.t2) <= dy) {
+					return "selected";
+				} else {
+					return "unselected";
+				}
+			})
+
+	getThoseBars();
+}
+
+function getThoseBars(){
+	selected = [];
+	d3.selectAll(".selected").style("id", function(d) {
+
+		selected.push(d);
+		return 
+	})
+	makeBars(selected);
+	selected = [];
 
 }
+
+function brushended() {
+	// console.log(d3.event.selection);
+	if (!d3.event.selection) {
+		makeBars(dummy);
+
+		d3.selectAll("circle")
+			.transition()
+			.duration(150)
+			.ease(d3.easeLinear)
+			.style("fill", "gray")
+
+	}
+	getThoseBars();
+}
+

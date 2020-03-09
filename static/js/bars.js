@@ -20,8 +20,9 @@ noUiSlider.create(stdSlider, {
 // ---------------------------------------------------
 // bar code chart starts here:
 // getting dimensions of the div we want
-var barcodeWidth = $("#bars").width() - 30;
-var barcodeHeight = 30;
+var barcodeWidth = $("#bars").width()-40;
+var barsheight = $("#bars").height()-10;
+var barcodeHeight = 32;
 
 // setting up domain and range for x and y of the chart
 // hard coding the domain for x input because I know my data is 
@@ -34,6 +35,11 @@ var chartScale = d3.scaleLinear()
 // same note as above re: the 100
 var barscale = d3.scaleLinear()
 	.domain([0, 100])
+
+var numbars = 20
+var textScale = d3.scaleOrdinal()
+					.domain([0, 20])
+					.range([barsheight,0])
 
 // data processing function here: returns a
 // dictionary of tvars and their respective data
@@ -77,6 +83,7 @@ function makeBars(data) {
 	datamap = d3.map(datamap);
 
 	// Add an svg for each element
+
 	var svgs = d3.select("#bars")
 				.selectAll("svg")
 					.data(datamap.values())
@@ -84,9 +91,14 @@ function makeBars(data) {
 		svgs.enter()
 			.append("svg")
 				.attr("class", "bsvgs")
+				.attr("id", function(d, i) {
+					return "t"+ (i+1);
+				})
 				.attr("width", barcodeWidth)
 				.attr("height", barcodeHeight)
 				.style("background-color", "#e8e8e8")
+				.attr("transform", "translate(35, 0)")
+
 
 		svgs.exit().remove();
 
@@ -98,6 +110,7 @@ function makeBars(data) {
 
 		blips.enter()
 			.append("rect")
+				.attr("class", "bloop")
 				.attr("id", function(d, i) {
 					return i;
 				})
@@ -119,9 +132,8 @@ function makeBars(data) {
 				.style("stroke-width", "1px")
 				.style("stroke", "#ededed")
 				.on("mouseover", function(d) {
-
 					var currid = this.id;
-					d3.selectAll("rect").style("fill", function(d) {
+					d3.selectAll(".bloop").style("fill", function(d) {
 						if (this.id == currid) {
 							return "blue";
 						} else {
@@ -130,16 +142,16 @@ function makeBars(data) {
 					});
 				})
 				.on("mouseout", function() {
-					d3.selectAll("rect").style("fill", function(d) {
+					d3.selectAll(".bloop").style("fill", function(d) {
 						return colorUp(d);
 					});
-
+					d3.selectAll(".unselected").style("fill", "gray");
 					d3.selectAll("circle").style("fill", "gray");
 				})
 				.on("click", function() {
 					var currid = this.id;
 					// interaction for isolating the connected marks
-					d3.selectAll("rect").style("fill", function(d) {
+					d3.selectAll(".bloop").style("fill", function(d) {
 						if (this.id == currid) {
 							if(colorUp(d) == "orange") {
 								return "orange";
@@ -148,19 +160,44 @@ function makeBars(data) {
 							}
 						return "blue";
 						} else {
-							return "#e8e8e8";
+							return "none";
 						}
 					});
-					// interaction for hilighting the respective data point circle
+					
+					// 	// interaction for hilighting the respective data point circle
 					d3.selectAll("circle").style("fill", function(d) {
-						if (this.id == currid) {
-							return "gray";
+						var thisid = itemID(d);
+						if (thisid == currid) {
+								return "gray";
 						} else {
-							return "white";
+								return "none";
 						}
 					})
-				})
 
+			})
+
+
+	var labels = d3.selectAll(".bsvgs").selectAll("text")
+			.data(function(d, i) {
+				var list = datamap.keys();
+				// console.log(list[i]);
+				return list[i];
+			})
+
+		labels.enter()
+				.append("text")
+					.attr("class", "labels")
+					.text(function(d) {
+						return d;
+					})
+					.attr("x", function(d, i) {
+						return (5*(i+1)) + 20;
+					})
+					.attr("y", barcodeHeight/2)
+					.attr("transform", "translate(-20, 5)")
+					.style("padding", "5px")
+
+		labels.exit().remove();
 }
 
 makeBars(dummy);
@@ -172,7 +209,7 @@ var backwards = d3.scaleLinear()
 
 // recolor function for barcode marks when the slider moves
 function recolor() {
-	d3.selectAll("rect").style("fill", function() {
+	d3.selectAll(".bloop").style("fill", function() {
 		var values = stdSlider.noUiSlider.get();
 		left = values[0];
 		right = values[1];
@@ -187,6 +224,6 @@ stdSlider.noUiSlider.on('change', recolor);
 // eventually will be functionality for the drop down control above the barcode charts
 // leave this along for now I guess
 $("#sorts").on("change", function() {
-	console.log("yes i know this doesn't work but eff it for now");
+	console.log("doesn't work right this second");
 
 });
