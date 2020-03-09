@@ -25,8 +25,9 @@ var y = d3.scaleLinear()
 
 // domains for the input from the data
 // just using t1 and t2 as placeholders for x and y right now
-x.domain(d3.extent(dummy, function(d) { return +(d.t1)}));
-y.domain(d3.extent(dummy, function(d) { return +(d.t2)}));
+
+x.domain(d3.extent(dummy, function(d) { return +(d.radius_mean)}));
+y.domain(d3.extent(dummy, function(d) { return +(d.texture_mean)}));
 
 //instantiate the axes for x and y
 var xAxis = d3.axisBottom(x);
@@ -52,10 +53,10 @@ var svg = d3.select("#scatter")
 				})
 				.attr("r", "4px")
 				.attr("cx", function(d) {
-					return (x(+(d.t1)));
+					return (x(+(d.radius_mean)));
 				})
 				.attr("cy", function(d) {
-					return (y(+(d.t2)))
+					return (y(+(d.texture_mean)))
 				})
 				.style("fill", "gray")
 
@@ -74,10 +75,10 @@ function updateScatter(data) {
 			})
 			.attr("r", "4px")
 				.attr("cx", function(d) {
-					return (x(+(d.t1)));
+					return (x(+(d.radius_mean)));
 				})
 				.attr("cy", function(d) {
-					return (y(+(d.t2)))
+					return (y(+(d.texture_mean)))
 				})
 				.style("fill", "blue");
 
