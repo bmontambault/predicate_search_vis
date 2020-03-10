@@ -1,5 +1,5 @@
 
-console.log("Generating the line charts...");
+// console.log("Generating the line charts...");
 
 // grab the dimensions of the div we want (right panel)
 var lineChartWidth = $("#sml-mpls").width() - 50;
