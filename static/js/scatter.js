@@ -1,5 +1,5 @@
 
-console.log("Generating the scatter plot/projection...");
+// console.log("Generating the scatter plot/projection...");
 
 function itemID(d) {
 	var rid = d.readings;

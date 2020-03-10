@@ -13,7 +13,3 @@ function predicate_search(targets, index){
     });
 }
 
-
-// functionname(arg1, arg2).then(function(res) {
-//     console.log(res);
-// })

@@ -7,6 +7,7 @@ import itertools
 
 from predicate_search import PredicateAnomalyDetection
 
+# data = pd.read_csv('static/data/normalized_breast_cancer.csv')
 data = pd.read_csv('static/data/normalized_breast_cancer.csv')
 clf = PredicateAnomalyDetection()
 clf.fit(data)
@@ -35,8 +36,10 @@ def get_distances(df, mean, cov, k=3):
 @app.route('/')
 def index():
 
-    distances = get_distances(data, clf.mean, clf.cov)
-    return render_template('index.html', dummy=dummy, distances=distances)
+    # distances = get_distances(data, clf.mean, clf.cov)
+    # return render_template('index.html', dummy=dummy, distances=distances)
+    return render_template('index.html', dummy=dummy)
+
 
 @app.route('/predicate_search', methods=['GET', 'POST'])
 def predicate_search():
