@@ -9,13 +9,27 @@ Each endpoint receives two values from the frontend
 
 `[0, 1, 4, 32, 34 ... ]`
 
-2) features: comma separated string indicating list of features
+2) targets: comma separated string indicating list of target features
 
 `'f1'`
 
 `'f1,f2,f4'`
 
-Each endpoint will return a result for the selected index and features
+Each endpoint will return a result for the selected index and targets
+
+Inputs can be sent via an ajax request:
+
+```
+return $.ajax({
+        url: '/endpoint',
+        data: JSON.stringify({'index': index, 'targets': targets}),
+        type : "POST",
+        success: function(resp, data){
+            var response = JSON.parse(resp);
+            if (response != null){
+                //do something
+            }
+```
 
 ### /get_zscores
 Returns z-score/mahalanobis distance for each point. The key is the row number of the point and the value is the z-score/distance
