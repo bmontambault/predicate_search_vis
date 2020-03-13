@@ -20,7 +20,7 @@ Each endpoint will return a result for the selected index and targets
 Inputs can be sent via an ajax request:
 
 ```
-return $.ajax({
+   $.ajax({
         url: '/endpoint',
         data: JSON.stringify({'index': index, 'targets': targets}),
         type : "POST",
