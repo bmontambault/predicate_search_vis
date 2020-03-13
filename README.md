@@ -29,6 +29,7 @@ Inputs can be sent via an ajax request:
             if (response != null){
                 //do something
             }
+        })
 ```
 
 ### /get_zscores
