@@ -1,3 +1,5 @@
+import pandas as pd
+
 from .model import RobustNormal
 from .predicate_data import PredicateData
 from .predicate_search import PredicateSearch
@@ -12,8 +14,9 @@ class AnomalyDetection:
         self.data = data
         model = RobustNormal()
         model.fit(data)
-        self.mean = model.params['mean']
-        self.cov = model.params['cov']
+
+        self.mean = pd.Series(model.params['mean'], index=self.data.columns)
+        self.cov = pd.DataFrame(model.params['cov'], columns=self.data.columns, index=self.data.columns)
         logp = model.score(data)
 
         self.predicate_data = PredicateData(data)

@@ -21,12 +21,14 @@ def index():
 def get_zscores():
     request_data = request.get_json(force=True)
     targets = request_data['targets']
+    print(distances[targets])
     return json.dumps(distances[targets])
 
 @app.route('/get_projections', methods=['GET', 'POST'])
 def projection():
     request_data = request.get_json(force=True)
     targets = request_data['targets']
+    print(projections[targets])
     return json.dumps(projections[targets])
 
 @app.route('/get_predicates', methods=['GET', 'POST'])
@@ -37,6 +39,7 @@ def predicate_search():
 
     raw_predicates = predicate_search.search(targets, index)
     predicates = [p.get_obj() for p in raw_predicates]
+    print(predicates)
     return json.dumps(predicates)
 
 if __name__ == "__main__":
