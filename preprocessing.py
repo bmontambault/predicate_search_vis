@@ -5,10 +5,10 @@ import argparse
 import pickle
 from sklearn.manifold import TSNE
 
-from predicate_search import PredicateAnomalyDetection
+from predicate_search import AnomalyDetection
 
 def train_model(data):
-    clf = PredicateAnomalyDetection()
+    clf = AnomalyDetection()
     clf.fit(data)
     return clf
 
