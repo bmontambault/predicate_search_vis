@@ -1,93 +1,136 @@
-import numpy as np
 import itertools
+import numpy as np
 
 class PredicateSearch:
 
-    def __init__(self, search_data, score, c, b):
-        self.search_data = search_data
-        self.score = score
+    def __init__(self, predicates, c=1):
+        self.predicates = predicates
+        self.all_features = list(set([p.feature for p in predicates]))
         self.c = c
-        self.b = b
-        self.base_predicates = self.search_data.predicates
 
-        self.SMALL_NUM = 10 ** -5
-        self.best_score = np.inf
-        self.best_p = []
+    def group_predicates(self, predicates, c):
+        grouped = {tuple(k): list(g) for k, g in itertools.groupby(predicates, key=lambda x: x.features)}
+        for k, v in grouped.items():
+            grouped[k] = sorted(v, key=lambda x: x.get_influence(c), reverse=True)
+        sorted_features = sorted(grouped.keys(), key=lambda k: grouped[k][0].get_influence(c), reverse=True)
+        return sorted_features, grouped
 
-    def step(self, predicates):
-        for p in predicates:
-            self.score_predicate(p, self.c)
-        eps = np.std([p.score for p in predicates]) * self.b
-        merged_predicates = self.merge(predicates, self.c, eps)
+    def merge_same_features(self, predicates, c):
+        predicates = predicates.copy()
+        merged_predicates = []
+        while len(predicates) > 0:
+            p = predicates.pop(0)
+            p, predicates = self.merge_predicate_list(p, predicates, c)
+            merged_predicates.append(p)
+        return merged_predicates
 
-        best_p = min(merged_predicates, key=lambda x: x.score)
-        best_score = best_p.score
-        best_p = [p for p in merged_predicates if p.score == best_score]
-
-        best_single_score = min([p.best_score for p in best_p])
-        pruned_predicates = self.prune(merged_predicates, best_single_score, self.SMALL_NUM)
-        predicates = self.intersect(pruned_predicates)
-        return predicates, best_p, best_score
-
-    def search(self, maxiters=100):
-        predicates = self.base_predicates.copy()
-        for i in range(maxiters):
-            predicates, best_p, best_score = self.step(predicates)
-            if best_score < self.best_score:
-                self.best_score = best_score
-                self.best_p = best_p
-            else:
-                return best_p
-            for p in predicates:
-                self.score_predicate(p, self.c)
-            predicates = [p for p in predicates if p.score < self.best_score]
-            if len(predicates) == 0:
-                return self.best_p
-
-    def score_predicate(self, predicate, c):
-        # print(predicate)
-        all_scores = self.score[predicate.selected_index]
-        score = all_scores.sum()
-        size = len(predicate.selected_index)
-        if size == 0:
-            weighted_score = 0
-        else:
-            weighted_score = score / size ** c
-        predicate.score = weighted_score
-        predicate.best_score = np.max(all_scores)
-
-    def merge_predicate(self, p, predicates, c, eps):
+    def merge_predicate_list(self, p, predicates, c):
+        old_influence = p.get_influence(c)
         for i in range(len(predicates)):
             new_p = predicates[i]
             if p.is_adjacent(new_p):
                 merged_p = p.merge(new_p)
-                self.score_predicate(merged_p, c)
-                if (merged_p.score - eps) <= p.score:
+                new_influence = merged_p.get_influence(c)
+                # print(p, old_influence, merged_p, new_influence)
+                if new_influence >= old_influence:
                     del predicates[i]
-                    return self.merge_predicate(merged_p, predicates, c, eps)
+                    return self.merge_predicate_list(merged_p, predicates, c)
         return p, predicates
 
-    def merge_feature(self, predicates, c, eps):
-        merged_predicates = []
-        while len(predicates) > 0:
-            p = predicates.pop(0)
-            p, predicates = self.merge_predicate(p, predicates, c, eps)
-            merged_predicates.append(p)
-        return merged_predicates
-
-    def merge(self, predicates, c, eps):
+    def merge_adjacent(self, predicates, c):
         merged = []
-        grouped = {tuple(k): list(g) for k, g in itertools.groupby(predicates, key=lambda x: x.features)}
-        sorted_features = sorted(list(grouped.keys()), key=lambda x: max(grouped[x], key=lambda y: y.score).score)
+        sorted_features, grouped = self.group_predicates(predicates, c)
         for k in sorted_features:
-            sorted_predicates = sorted(grouped[k], key=lambda x: x.score)
-            merged_features = self.merge_feature(sorted_predicates, c, eps)
+            merged_features = self.merge_same_features(grouped[k], c)
             merged += merged_features
-        return merged
+        merged_filtered = ([next(v) for k, v in itertools.groupby(merged, lambda x: x.query)])
+        return merged_filtered
 
-    def prune(self, predicates, best_score, SMALL_NUM):
-        return [p for p in predicates if p.best_score - SMALL_NUM < best_score]
+    def prune(self, predicates, best_point_influence):
+        return [p for p in predicates if max(p.point_influence) >= best_point_influence]
 
     def intersect(self, predicates):
         new_predicates = [p1.merge(p2) for p1, p2 in itertools.combinations(predicates, 2) if not p1.is_adjacent(p2)]
-        return new_predicates
+        new_predicates_filtered = ([next(v) for k, v in itertools.groupby(new_predicates, lambda x: x.query)])
+        return new_predicates_filtered
+
+    def prune_results(self, results, best_influence, c, SMALL_NUM):
+        return [a for b in [r for r in results if r[-1].get_influence(c) >= best_influence - SMALL_NUM] for a in b]
+
+    def set_influence_equal(self, p1, p2):
+        x1 = np.log(p1.point_influence.sum())
+        x2 = np.log(p2.point_influence.sum())
+        s1 = np.log(p1.size)
+        s2 = np.log(p2.size)
+        return (x1 - x2) / (s1 - s2)
+
+    def get_c_scale(self, predicates, eps=10**-3):
+        sorted_predicates = sorted(predicates, key=lambda x: x.get_influence(1), reverse=True)
+        next_worst_predicate = sorted_predicates[0]
+        for p in sorted_predicates[1:-1]:
+            next_worst_predicate = next_worst_predicate.merge(p)
+        worst_predicate = next_worst_predicate.merge(sorted_predicates[-1])
+
+        c_min = self.set_influence_equal(worst_predicate, next_worst_predicate) - eps
+        return c_min
+
+    def rescale(self, val, in_min, in_max, out_min, out_max):
+        return out_min + (val - in_min) * ((out_max - out_min) / (in_max - in_min))
+
+    def search_features(self, features=None, index=None, c=None, maxiters=10):
+        if c is None:
+            c = self.c
+        if features is None:
+            features = self.all_features
+        SMALL_NUM = 10**-4
+        predicates = [p for p in self.predicates if p.feature in features]
+        if index is not None:
+            predicates = [p for p in predicates if not set(index).isdisjoint(p.selected_index)]
+
+        c_min = self.get_c_scale(predicates)
+        # scaled_c = c
+        scaled_c = self.rescale(c, 0, 1, c_min, 1)
+
+        best_influence = -np.inf
+        best_predicate = None
+        for i in range(maxiters):
+            # if i > 0:
+            #     for p in sorted(predicates, key=lambda x: x.get_influence(scaled_c))[:20]:
+            #         print(p, p.get_influence(scaled_c), best_predicate, best_influence)
+            #     print()
+
+            predicates = [p for p in predicates if p.get_influence(scaled_c) >= best_influence - SMALL_NUM]
+            if len(predicates) == 0 or len(predicates) > 300:
+                return best_predicate
+
+            # print(f'merging {len(predicates)}')
+            # if len(predicates) > 200:
+            #     for p in predicates:
+            #         print(p)
+            merged = self.merge_adjacent(predicates, scaled_c)
+            # print('done merging')
+            #
+            # for p in sorted(merged, key=lambda x: x.get_influence(c), reverse=True):
+            #     print(p, p.get_influence(scaled_c))
+            # print()
+
+            best_predicate = max(merged, key=lambda x: x.get_influence(scaled_c))
+            best_influence = best_predicate.get_influence(scaled_c)
+            best_point_influence = min(best_predicate.point_influence)
+
+            pruned = self.prune(merged, best_point_influence)
+            predicates = self.intersect(pruned)
+
+        return best_predicate
+
+    def search(self, targets=None, index=None, c=None, maxiters=2):
+        if targets is None:
+            targets = self.targets
+        target_predicates = self.search_features(targets, index, c, maxiters)
+        other_features = [f for f in self.all_features if f not in targets]
+        if len(other_features) == 0:
+            return [target_predicates]
+        else:
+            other_predicates = self.search_features(c, other_features, index, maxiters)
+            predicates = [target_predicates, other_predicates]
+            return predicates
