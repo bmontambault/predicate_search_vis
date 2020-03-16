@@ -1,70 +1,82 @@
 import numpy as np
-import itertools
 
-class Feature:
+class Predicate(object):
 
-    def __init__(self, feature, values, adj_matrix, is_disc):
+    # def get_avg_logp_change(self, logp):
+    #     if len(self.selected_index) == 0:
+    #         return 0
+    #     point_logp = logp[self.selected_index]
+    #     size = len(point_logp)
+    #     avg_logp = (logp.sum() - point_logp.sum()) / (len(logp) - size)
+    #     avg_logp_change = logp.mean() - avg_logp
+    #     return avg_logp_change
+    #
+    # def get_point_influence(self, logp):
+    #     if len(self.selected_index) == 0:
+    #         return 0
+    #     point_logp = logp[self.selected_index]
+    #     point_influence = logp.mean() - ((logp.sum() - point_logp) / (len(logp) - 1))
+    #     return point_influence
+    #
+    # def get_influence(self, c):
+    #     if self.size == 0:
+    #         return 0
+    #     return self.avg_logp_change / self.size**c
+
+    def get_point_influence(self, logp):
+        if len(self.selected_index) == 0:
+            return 0
+        point_influence = -logp[self.selected_index]
+        return point_influence
+
+    def get_influence(self, c):
+        if self.size == 0:
+            return 0
+        return self.point_influence.sum() / self.size**c
+
+
+class BasePredicate(Predicate):
+    
+    def __init__(self, feature, values, selected_index, logp):
         self.feature = feature
-        self.values = sorted(values)
-        self.adj_matrix = adj_matrix
-        self.is_disc = is_disc
-
-    def __repr__(self):
-        return str(self.feature)
-
-
-class SingleFeaturePredicate(object):
-
-    def __init__(self):
-        self.data = None
-        self.selected_index = None
-
-    def merge(self, predicate):
-        return CompoundPredicate([self, predicate])
-
-    def set_data(self, data):
-        self.data = data
-        self.selected_index = list(data.query(self.query).index)
-
-
-class DiscSingleFeaturePredicate(SingleFeaturePredicate):
-
-    def __init__(self, feature, values):
-        super().__init__()
-        self.feature = feature
-        self.features = [feature.feature]
+        self.features = [feature]
         self.values = values
+        self.selected_index = selected_index
+        self.size = len(selected_index)
+        self.logp = logp
         self.query = self.get_query()
-
-    def get_query(self):
-        return f"{self.feature.feature} in {self.values}"
+        #self.avg_logp_change = self.get_avg_logp_change(logp)
+        self.point_influence = self.get_point_influence(logp)
 
     def merge(self, predicate):
-        if self.feature != predicate.feature:
-            return super().merge(predicate)
-
-    def is_adjacent(self, predicate):
-        if type(self) != type(predicate):
-            return False
-        if self.feature == predicate.feature:
-            return True
+        if self.__class__.__base__ == BasePredicate and predicate.__class__.__base__ == BasePredicate:
+            if self.feature == predicate.feature:
+                selected_index = np.array(list(set(list(self.selected_index) + list(predicate.selected_index))))
+                if type(self) == ContBasePredicate:
+                    merged_interval_lists = self.merge_interval_lists(self.values.copy(), predicate.values.copy())
+                    merged_intervals = self.merge_intervals(merged_interval_lists)
+                    return ContBasePredicate(self.feature, merged_intervals, selected_index, self.logp,
+                                             self.adj_matrix)
+                elif type(self) == DiscBasePredicate:
+                    return DiscBasePredicate(self.feature, self.values + predicate.values, selected_index, self.logp)
+            else:
+                return CompoundPredicate([self, predicate])
+        elif type(self) == CompoundPredicate:
+            return self.merge(predicate)
+        elif type(predicate) == CompoundPredicate:
+            return predicate.merge(self)
 
     def get_obj(self):
-        return {self.feature.feature: self.values}
+        return {self.feature: self.values}
 
-
-class ContSingleFeaturePredicate(SingleFeaturePredicate):
-
-    def __init__(self, feature, intervals):
-        super().__init__()
-        self.feature = feature
-        self.features = [feature.feature]
-        self.intervals = intervals
-        self.query = self.get_query()
-
-    def get_query(self):
-        return " or ".join([f"({self.feature.feature} >= {interval[0]} and {self.feature.feature} <= {interval[1]})"
-                            for interval in self.intervals])
+    def __repr__(self):
+        return f"{self.feature}: {self.values}"
+        
+class ContBasePredicate(BasePredicate):
+    
+    def __init__(self, feature, values, selected_index, logp, adj_matrix):
+        self.adj_matrix = adj_matrix
+        super().__init__(feature, values, selected_index, logp)
 
     def merge_interval_lists(self, intervals_a, intervals_b):
         intervals = []
@@ -85,7 +97,7 @@ class ContSingleFeaturePredicate(SingleFeaturePredicate):
             return [interval_a]
         # first interval overlaps second interval: return start of first interval and end of second interval
         # endpoints are adjacent: return start of first interval and end of second interval
-        elif interval_a[1] > interval_b[0] or self.feature.adj_matrix[interval_a[1]][interval_b[0]]:
+        elif interval_a[1] > interval_b[0] or self.adj_matrix[interval_a[1]][interval_b[0]]:
             return [(interval_a[0], interval_b[1])]
         # intervals not overlapping or adjacent
         else:
@@ -106,89 +118,88 @@ class ContSingleFeaturePredicate(SingleFeaturePredicate):
                 i += 1
         return intervals
 
-    def merge(self, predicate):
+    def is_adjacent(self, predicate):
+        if type(predicate) != ContBasePredicate:
+            return False
         if self.feature != predicate.feature:
-            return super().merge(predicate)
-        else:
-            intervals = self.merge_intervals(
-                self.merge_interval_lists(self.intervals.copy(), predicate.intervals.copy()))
-            new_predicate = ContSingleFeaturePredicate(self.feature, intervals)
-            if self.selected_index is not None and predicate.selected_index is not None:
-                new_predicate.selected_index = list(self.selected_index) + list(predicate.selected_index)
-            return new_predicate
+            return False
+        intervals = self.merge_interval_lists(self.values.copy(), predicate.values.copy())
+        for i in range(len(intervals)-1):
+            if self.adj_matrix[intervals[i][1]].loc[intervals[i+1][0]]:
+                return True
+        return False
+
+    def get_query(self):
+        return " or ".join([f"({self.feature} >= {interval[0]} and {self.feature} <= {interval[1]})"
+                            for interval in self.values])
+
+class DiscBasePredicate(BasePredicate):
+
+    def __init__(self, feature, values, selected_index, logp):
+        values = list(set(values))
+        super().__init__(feature, values, selected_index, logp)
 
     def is_adjacent(self, predicate):
-        if type(self) != type(predicate):
-            return False
-        if self.feature != predicate.feature:
-            return False
-        merged_intervals = self.merge_intervals(
-            self.merge_interval_lists(self.intervals.copy(), predicate.intervals.copy()))
-        return len(merged_intervals) < len(self.intervals) + len(predicate.intervals)
+        return type(predicate) == DiscBasePredicate and self.feature == predicate.feature
 
-    def get_obj(self):
-        return {self.feature.feature: self.intervals}
+    def get_query(self):
+        return f"{self.feature} in {self.values}"
 
-    def __repr__(self):
-        return f"{self.feature.feature}: {self.intervals}"
-
-
-class CompoundPredicate():
+class CompoundPredicate(Predicate):
 
     def __init__(self, base_predicates):
-        self.data = None
-        self.base_predicates = sorted(base_predicates, key=lambda x: x.feature.feature)
-        self.predicates = {k: self.merge_single_feature_predicates(list(p)) for k, p in
-                           itertools.groupby(self.base_predicates, key=lambda x: x.feature.feature)}
-        self.features = list(self.predicates.keys())
-        self.selected_index = np.array(list(set.intersection(*map(set,
-                                                                  [p.selected_index for p in
-                                                                   self.predicates.values()]))))
+        self.base_predicates = base_predicates
 
-    def merge_single_feature_predicates(self, predicates):
-        p = predicates[0]
-        for next_p in predicates[1:]:
-            p = p.merge(next_p)
-        return p
+        self.features = [p.feature for p in base_predicates]
+        self.selected_index = np.array(list(set.intersection(*map(set, [p.selected_index for p in self.base_predicates]))))
+        self.size = len(self.selected_index)
+        self.logp = self.base_predicates[0].logp
+        #self.avg_logp_change = self.get_avg_logp_change(self.logp)
+        self.point_influence = self.get_point_influence(self.logp)
+        self.query = self.get_query()
+
+    def merge_compound(self, predicate):
+        base_predicates = self.base_predicates + predicate.base_predicates
+        merged_predicate = base_predicates[0]
+        for p in base_predicates[1:]:
+            merged_predicate = merged_predicate.merge(p)
+        return merged_predicate
+
+    def merge_base(self, predicate):
+        if predicate.feature in self.features:
+            index = self.features.index(predicate.feature)
+            base_predicates = self.base_predicates.copy()
+            base_predicates[index] = base_predicates[index].merge(predicate)
+        else:
+            base_predicates = self.base_predicates + [predicate]
+        return CompoundPredicate(base_predicates)
 
     def merge(self, predicate):
-        base_predicates = {}
-        for k, v in self.predicates.items():
-            if k in predicate.predicates:
-                print((predicate.predicates[k].feature.adj_matrix))
-                base_predicates[k] = v.merge(predicate.predicates[k])
-            else:
-                base_predicates[k] = v
-        for k, v in predicate.predicates.items():
-            if k not in base_predicates:
-                base_predicates[k] = v
-        return CompoundPredicate(base_predicates.values())
-
-    def get_score(self, scores, alpha):
-        predicate_scores = scores[self.selected_index]
-        size = len(predicate_scores)
-        score = predicate_scores.sum()
-        if len(size) == 0:
-            return 0
-        return score / (size ** alpha)
-
-    def set_score(self, scores, alpha):
-        self.score = self.get_score(scores, alpha)
+        if type(predicate) == CompoundPredicate:
+            return self.merge_compound(predicate)
+        else:
+            return self.merge_base(predicate)
 
     def is_adjacent(self, predicate):
-        if type(self) != type(predicate):
+        if sorted(self.features) != sorted(predicate.features):
             return False
-        if self.features != predicate.features:
-            return False
-        adj = np.array([self.predicates[f].is_adjacent(predicate.predicates[f]) and
-                        not np.all(self.predicates[f].selected_index == predicate.predicates[f].selected_index)
-                        for f in self.features]).astype(int)
-        eq = np.array([np.all(self.predicates[f].selected_index == predicate.predicates[f].selected_index)
-                       for f in self.features]).astype(int)
-        return sum(adj) == 1 and sum(eq) == len(self.features) - 1
+        sorted_predicates1 = sorted(self.base_predicates, key=lambda p: p.feature)
+        sorted_predicates2 = sorted(predicate.base_predicates, key=lambda p: p.feature)
+        equal_vals_count = 0
+        adjacent_vals_count = 0
+        for i in range(len(sorted_predicates1)):
+            if sorted_predicates1[i].is_adjacent(sorted_predicates2[i]):
+                if sorted_predicates1[i].values == sorted_predicates2[i].values:
+                    equal_vals_count += 0
+                else:
+                    adjacent_vals_count += 0
+        return adjacent_vals_count == 1 and equal_vals_count == len(self.features) - 1
 
     def get_obj(self):
-        return dict([(p.feature.feature, p.intervals) for p in self.base_predicates])
+        return {p.feature: p.values for p in self.base_predicates}
+
+    def get_query(self):
+        return " and ".join([f"({p.query})" for p in self.base_predicates])
 
     def __repr__(self):
-        return '{' + f"{list(self.predicates.values())}"[1:-1] + '}'
+        return '[' + ", ".join([f"{p.feature}: {p.values}" for p in sorted(self.base_predicates, key=lambda x: x.feature)]) + ']'

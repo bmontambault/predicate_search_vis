@@ -1,41 +1,34 @@
-import numpy as np
 import pandas as pd
-import scipy.stats as st
 
 from .model import RobustNormal
-from .search_data import SearchData
+from .predicate_data import PredicateData
 from .predicate_search import PredicateSearch
+from .predicate import BasePredicate, ContBasePredicate, DiscBasePredicate
 
-class PredicateAnomalyDetection:
+class AnomalyDetection:
 
-    def __init__(self, c=.8, b=.1):
+    def __init__(self, c=.5):
         self.c = c
-        self.b = b
 
-    def fit(self, df):
-        self.df = df
-        self.model = RobustNormal()
-        self.model.fit(df)
-        self.mean = pd.Series(self.model.params['mean'].ravel(), index=df.columns)
-        self.cov = pd.DataFrame(self.model.params['cov'], index=df.columns, columns=df.columns)
+    def fit(self, data):
+        self.data = data
+        model = RobustNormal()
+        model.fit(data)
 
-    def score(self, targets):
-        mean = self.mean[targets].values
-        cov = self.cov[targets][targets].values
-        vals = self.df[targets]
-        score = st.multivariate_normal(mean, cov).logpdf(vals)
-        return score
+        self.mean = pd.Series(model.params['mean'], index=self.data.columns)
+        self.cov = pd.DataFrame(model.params['cov'], columns=self.data.columns, index=self.data.columns)
+        logp = model.score(data)
 
-    def search(self, targets=None):
+        self.predicate_data = PredicateData(data)
+        predicates = self.predicate_data.get_base_predicates(logp)
+        self.predicate_search = PredicateSearch(predicates)
+
+    def search(self, targets=None, index=None, c=None, maxiters=10):
         if targets is None:
-            targets = self.df.columns
-        data = self.df[targets]
-        search_data = SearchData(data)
-        score = self.score(targets)
-        predicate_search = PredicateSearch(search_data, score, c=self.c, b=self.b)
-        best_p = predicate_search.search()
+            targets = self.data.columns.tolist()
+        if c is None:
+            c = self.c
 
-        cont_p = []
-        for p in best_p:
-            cont_p.append(search_data.disc_predicate_to_cont(p))
-        return cont_p
+        raw_predicate = self.predicate_search.search(c=c, targets=targets, index=index, maxiters=maxiters)
+        predicate = [self.predicate_data.disc_predicate_to_cont(p) for p in raw_predicate]
+        return predicate
