@@ -22,7 +22,8 @@ def get_zscores():
     request_data = request.get_json(force=True)
     targets = request_data['targets']
     print(distances[targets])
-    return json.dumps(distances[targets])
+    return json.dumps(distances)
+    # return json.dumps(distances[targets])
 
 @app.route('/get_projections', methods=['GET', 'POST'])
 def projection():
