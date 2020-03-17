@@ -27,14 +27,14 @@ def get_zscores():
     # return json.dumps(distances[targets])
 
 @app.route('/get_projections', methods=['GET', 'POST'])
-def projection():
+def get_projections():
     request_data = request.get_json(force=True)
     targets = request_data['targets']
     print(projections[targets])
     return json.dumps(projections[targets])
 
 @app.route('/get_predicates', methods=['GET', 'POST'])
-def predicate_search():
+def get_predicates():
     print("yeah?")
     request_data = request.get_json(force=True)
     targets = request_data['targets']

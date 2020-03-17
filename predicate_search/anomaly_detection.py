@@ -30,5 +30,5 @@ class AnomalyDetection:
             c = self.c
 
         raw_predicate = self.predicate_search.search(c=c, targets=targets, index=index, maxiters=maxiters)
-        predicate = [self.predicate_data.disc_predicate_to_cont(p) for p in raw_predicate]
+        predicate = [self.predicate_data.disc_predicate_to_cont(p) for p in raw_predicate if p is not None]
         return predicate

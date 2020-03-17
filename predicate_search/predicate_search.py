@@ -77,7 +77,8 @@ class PredicateSearch:
     def rescale(self, val, in_min, in_max, out_min, out_max):
         return out_min + (val - in_min) * ((out_max - out_min) / (in_max - in_min))
 
-    def search_features(self, features=None, index=None, c=None, maxiters=10):
+    def search_features(self, features=None, index=None, c=None, maxiters=100):
+        print('features: ', features)
         if c is None:
             c = self.c
         if features is None:
@@ -88,7 +89,6 @@ class PredicateSearch:
             predicates = [p for p in predicates if not set(index).isdisjoint(p.selected_index)]
 
         c_min = self.get_c_scale(predicates)
-        # scaled_c = c
         scaled_c = self.rescale(c, 0, 1, c_min, 1)
 
         best_influence = -np.inf
@@ -125,12 +125,12 @@ class PredicateSearch:
 
     def search(self, targets=None, index=None, c=None, maxiters=2):
         if targets is None:
-            targets = self.targets
+            targets = self.all_features
         target_predicates = self.search_features(targets, index, c, maxiters)
         other_features = [f for f in self.all_features if f not in targets]
         if len(other_features) == 0:
             return [target_predicates]
         else:
-            other_predicates = self.search_features(c, other_features, index, maxiters)
+            other_predicates = self.search_features(other_features, index, c, maxiters)
             predicates = [target_predicates, other_predicates]
             return predicates

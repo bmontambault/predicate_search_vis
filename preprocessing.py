@@ -62,5 +62,6 @@ if __name__ == "__main__":
 
     data = pd.read_csv(data_path)
     model = dict(zip(['predicate_search', 'distances', 'projections'], preprocessing(data, k)))
+
     with open(f'models/{name}.pkl', 'wb') as f:
         pickle.dump(model, f)
