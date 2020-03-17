@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request
+import pandas as pd
 import json
 import pickle
 
@@ -33,13 +34,13 @@ def projection():
 
 @app.route('/get_predicates', methods=['GET', 'POST'])
 def predicate_search():
+    print("yeah?")
     request_data = request.get_json(force=True)
     targets = request_data['targets']
     index = request_data['index']
 
     raw_predicates = predicate_search.search(targets, index)
     predicates = [p.get_obj() for p in raw_predicates]
-    print(predicates)
     return json.dumps(predicates)
 
 if __name__ == "__main__":

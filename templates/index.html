@@ -12,8 +12,6 @@
 	<script type="text/javascript" src = "../static/js/jquery-3.1.0.min.js"></script>
 	<script type="text/javascript" src="../static/js/nouislider.min.js"></script>
 	<script type="text/javascript" src = "../static/js/d3.v4.min.js"></script>
-	<script type="text/javascript" src="../static/js/tabs.js"></script>
-	<script type="text/javascript" src="../static/js/data.js"></script>
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wnumb/1.2.0/wNumb.min.js"></script>
 </head>
 <body>
@@ -57,17 +55,15 @@
 
 			<!-- 	These are the little tab guys themselves -->
 				<div class = "tabs">
-					<button class = "tablink" onclick="showTab('one', this, 'white')" id="defaultOpen">Recipe 1</button>
+<!-- 					<button class = "tablink" onclick="showTab('one', this, 'white')" id="defaultOpen">Recipe 1</button>
 					<button class = "tablink" onclick="showTab('two', this, 'white')">Recipe 2</button>
 					<button class = "tablink" onclick="showTab('three', this, 'white')">Recipe 3</button>
-					<button class = "go">Run model</button>
+					<button class = "go">Run model</button> -->
 				</div>
 
 				<!-- Div below the tabs themselves. Content changes dynamically via tabs.js -->
 				<div class = "explain">
-					<div id = "one" class="content">Bacon ipsum dolor amet tail kielbasa sirloin chicken ham. Chislic beef ribs ball tip ham venison shank t-bone ribeye cow short ribs andouille burgdoggen tenderloin fatback leberkas. Prosciutto boudin rump brisket tail. Ball tip turkey chicken, sausage turducken tongue buffalo t-bone tenderloin.</div>
-					<div id = "two" class="content">Turkey ribeye shank porchetta swine flank short ribs tail beef fatback. Corned beef biltong pork belly picanha. Tongue corned beef shankle pork, alcatra picanha pastrami buffalo hamburger flank. Andouille flank burgdoggen, beef ribs cow turkey bacon salami fatback meatloaf spare ribs pancetta. Prosciutto pancetta pastrami short loin chislic meatball short ribs spare ribs porchetta tongue landjaeger hamburger venison.</div>
-					<div id = "three" class="content">Rump prosciutto strip steak chicken, ground round pork loin tail. Cow jowl frankfurter strip steak prosciutto buffalo pork belly shankle sausage ham hock burgdoggen hamburger pork chop swine pork. Ham hock pork prosciutto jerky meatloaf, pork belly filet mignon. Jowl pork chop pork loin spare ribs picanha meatball. Cow tail pastrami picanha pork belly turkey flank corned beef chuck shankle turducken drumstick.</div>	
+<!-- 					<div id = "one" class="content">Bacon ipsum dolor</div> -->
 				</div>
 				
 			</div>
@@ -94,32 +90,12 @@
 </body>
 </html>
 
-<!--load data from backend-->
-<script>
-var dummy = {{dummy|safe}}
-
-console.log(dummy)
 </script>
 
-</script>
-
-<!-- These are the js files that hold the d3 for the viz's themselves. There's one per vis:
-bars.js = the barcodes
-scatter.js = the scatterplot/future projection
+<!-- These are the js files that hold the d3 for the viz's themselves. There's one per 
 line.js = the line charts on the right panel -->
 <script type="text/javascript" src="../static/js/bars.js"></script>
-<script type="text/javascript" src="../static/js/predicate_search.js"></script>
-
 <script type="text/javascript" src="../static/js/scatter.js"></script>
 <script type="text/javascript" src="../static/js/lines.js"></script>
 <script type="text/javascript" src="../static/js/button.js"></script>
-<script type="text/javascript" src="static/js/bars.js"></script>
-<script type="text/javascript" src="static/js/scatter.js"></script>
-<script type="text/javascript" src="static/js/lines.js"></script>
-<script type="text/javascript" src="static/js/lines.js"></script>
-<script type="text/javascript" src="static/js/predicate_search.js"></script>
-
-<!--test predicate search-->
-<!--<script>-->
-<!--predicate_search("targets", "indices")-->
-<!--</script>-->
+<script type="text/javascript" src="../static/js/tabs.js"></script>
