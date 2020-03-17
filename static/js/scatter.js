@@ -11,22 +11,6 @@ function get_scatter_data(index, targets){
     });
 }
 
-function get_preds(index, targets){
-
-    return    $.ajax({
-        url: 'http://localhost:5000/get_predicates',
-        type : "POST",
-        data: JSON.stringify({'index': index, 'targets': targets}),
-        dataType: "JSON",
-        success: function(resp, data){
-            var response = JSON.parse(resp);
-            if (response != null){
-                console.log(response);
-            }
-        }
-	})
-}
-
 // grab the dimensions of the div we want
 var canvasW = $("#scatter").width();
 var canvasH = $("#scatter").height();
@@ -43,10 +27,20 @@ var x = d3.scaleLinear()
 var y = d3.scaleLinear()
 			.range([height-30, 0]);
 
+	// create an svg for the scatter plot
+var svg = d3.select("#scatter")
+			.append("svg")
+				.attr("width", width)
+				.attr("height", height)
+				.style("border", "2px solid #e8e8e8")
+				.style("border-radius", "5px")
+				.append("g")
+					.attr("transform", "translate(" + (margin.left+10) + ", " + margin.top + ")")
+
 // collect data from api and build the scatter plot
 get_scatter_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(res) {
 	
-	console.log(res);
+	// console.log(res);
 
 	// domains for the input from the data
 	x.domain(d3.extent(res, function(d) { return +(d.x)}));
@@ -55,16 +49,6 @@ get_scatter_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(re
 	//instantiate the axes for x and y
 	var xAxis = d3.axisBottom(x);
 	var yAxis = d3.axisLeft(y);
-
-	// create an svg for the scatter plot
-	var svg = d3.select("#scatter")
-				.append("svg")
-					.attr("width", width)
-					.attr("height", height)
-					.style("border", "2px solid #e8e8e8")
-					.style("border-radius", "5px")
-					.append("g")
-						.attr("transform", "translate(" + (margin.left+10) + ", " + margin.top + ")")
 
 		// draw a point for each data point
 		svg.selectAll("circle")
@@ -82,14 +66,6 @@ get_scatter_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(re
 						return (y(+(d.y)))
 					})
 					.style("fill", "gray")
-
-	selected = [];
-	svg.append("g")
-	      .call(d3.brush().extent([[0, 0], [width, height]])
-	      	.on("brush", brushed)
-	      	.on("end", brushended));
-
-
 })
 
 // update function. Anytime a change is made the data, the vis will get redrawn
@@ -117,6 +93,11 @@ function updateScatter(data) {
 		svgCircles.exit().remove();
 }
 
+svg.append("g")
+      .call(d3.brush().extent([[0, 0], [width, height]])
+      	.on("brush", brushed)
+      	.on("end", brushended));
+
 
 function brushed() {
 	var s = d3.event.selection,
@@ -128,14 +109,15 @@ function brushed() {
 
 	d3.selectAll("circle")
 			.style("fill", function(d) {
-				if (x(+d.x) >= x0 && x(+d.x) <= dx && y(+d.y) >= y0 && y(+d.y) <= dy) {
+
+				if (x(d.x) >= x0 && x(d.x) <= dx && y(d.y) >= y0 && y(d.y) <= dy) {
 					return "blue";
 				} else {
 					return "gray";
 				}
 			})
 			.attr("class", function(d) {
-				if (x(+d.x) >= x0 && x(+d.x) <= dx && y(+d.y) >= y0 && y(+d.y) <= dy) {
+				if (x(d.x) >= x0 && x(d.x) <= dx && y(d.y) >= y0 && y(d.y) <= dy) {
 					return "selected";
 				} else {
 					return "unselected";

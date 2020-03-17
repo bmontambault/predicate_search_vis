@@ -59,8 +59,8 @@ footer {
 	justify-content: center;
 	align-items: center;
 	align-content: center;
-	height: 100%;
-	width: 30%;
+	height: 99%;
+	width: 31%;
 }
 
 #control-container {
@@ -68,7 +68,7 @@ footer {
 	flex-direction: column;
 	align-items: center;
 	justify-content: space-around;
-	height: 12%;
+	height: 10%;
 	width: 100%;
 	padding-bottom: 10px;
 	padding-top: 10px;
@@ -101,7 +101,7 @@ footer {
 
 #bars {
 	align-self: right;
-	height: 90%;
+	height: 86%;
 	width: 100%;
 	overflow-x: hidden;
 	overflow-y: auto;
@@ -165,8 +165,9 @@ footer {
 }
 
 .content {
+	display:flex;
+	width: 100%;
 	padding: 1%;
-	display: none;
 	height:90%;
 }
 

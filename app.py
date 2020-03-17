@@ -22,7 +22,7 @@ def index():
 def get_zscores():
     request_data = request.get_json(force=True)
     targets = request_data['targets']
-    print(distances[targets])
+    # print(distances[targets])
     return json.dumps(distances)
     # return json.dumps(distances[targets])
 
@@ -30,12 +30,11 @@ def get_zscores():
 def get_projections():
     request_data = request.get_json(force=True)
     targets = request_data['targets']
-    print(projections[targets])
+    # print(projections[targets])
     return json.dumps(projections[targets])
 
 @app.route('/get_predicates', methods=['GET', 'POST'])
 def get_predicates():
-    print("yeah?")
     request_data = request.get_json(force=True)
     targets = request_data['targets']
     index = request_data['index']

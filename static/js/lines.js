@@ -11,11 +11,11 @@ function get_line_data(index, targets){
     });
 }
 
-get_line_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(res) {
+// get_line_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(res) {
 
-	console.log(res);
+// 	console.log(res);
 
-});
+// });
 
 // grab the dimensions of the div we want (right panel)
 var lineChartWidth = $("#sml-mpls").width() - 50;

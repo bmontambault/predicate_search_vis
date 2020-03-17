@@ -1,23 +1,6 @@
 
 // console.log("Generating the barcode charts...");
 
-// This part just sets up the slider, no need to mess with this I don't think
-var stdSlider = document.getElementById('controls');
-
-noUiSlider.create(stdSlider, {
-	start: [5, 95],
-	connect: false,
-	tooltips: true,
-	range: {
-		'min': 0,
-		'max': 100
-	},
-	format: wNumb({
-		decimals: 0
-	})
-});
-
-// ---------------------------------------------------
 function get_barcode_data(index, targets){
 
     return $.ajax({
@@ -25,152 +8,177 @@ function get_barcode_data(index, targets){
         type: "POST",
         dataType: "JSON",
         data: JSON.stringify({'index':index, 'targets': targets}),
+        success: function(resp, data){
+            if (resp != null){
+                return resp;
+            }
+        }
     });
 }
 
-// bar code chart starts here:
-// getting dimensions of the div we want
 var barcodeWidth = $("#bars").width()-40;
 var barsheight = $("#bars").height()-10;
 var barcodeHeight = 32;
-
-// setting up domain and range for x and y of the chart
-// hard coding the domain for x input because I know my data is 
-// just a random number from 1-100. Will need to dynamically generate
-// once you get your data in here
+console.log(barcodeWidth);
 var x = d3.scaleLinear()
 		.range([0, barcodeWidth]) 
 
-
 // this function color the little bar marks based on the
 // values of the slider
+
+get_barcode_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(res) {
+
+	var ks = [];
+	var vals = [];
+	var dict = {};
+
+	var datamap = d3.map(res);
+
+	for (property in datamap) {
+		ks.push(property);
+	}
+
+	for (var i = 0; i < 30; i++) {
+		var elem = ks[i];
+		vals.push(datamap[elem]);
+		dict[elem] = datamap[elem];
+	}
+
+	var mmax = 0;
+
+	for (var i = 0; i < vals.length; i++) {
+		var fornow = d3.map(vals[i]);
+		var currmax = d3.max(fornow.values());
+		if(mmax < currmax) {
+			mmax = currmax;
+		}
+	}
+
+// This part just sets up the slider, no need to mess with this I don't think
+var stdSlider = document.getElementById('controls');
+var ninefive = Math.floor(0.95*(mmax));
+
+noUiSlider.create(stdSlider, {
+	start: [0, ninefive],
+	connect: false,
+	tooltips: true,
+	range: {
+		'min': 0,
+		'max': mmax+1
+	},
+	format: wNumb({
+		decimals: 0
+	})
+});
+
 function colorUp(d) {
 	var values = stdSlider.noUiSlider.get();
 	var left = values[0];
 	var right = values[1];
-		if (((+d) <=left) || ((+d)>=right)) {
+		if (((d) <=left) || ((d)>=right)) {
 			return "orange";
 		} else {
 			return "gray";
 		}
 }
 
-get_barcode_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(res) {
-
-	// console.log(res);
 	// Add an svg for each element
+	var svgs = d3.select("#bars")
+				.selectAll("svg")
+					.data(vals)
 
-	// var svgs = d3.select("#bars")
-	// 			.selectAll("svg")
-	// 				.data(res)
-
-	// 	svgs.enter()
-	// 		.append("svg")
-	// 			.attr("class", "bsvgs")
-	// 			.attr("width", barcodeWidth)
-	// 			.attr("height", barcodeHeight)
-	// 			.style("background-color", "#e8e8e8")
-	// 			.attr("transform", "translate(35, 0)")
+		svgs.enter()
+			.append("svg")
+				.attr("id", "barcode")
+				.attr("class", "bsvgs")
+				.attr("width", barcodeWidth)
+				.attr("height", barcodeHeight)
+				.style("background-color", "#e8e8e8")
+				.attr("transform", "translate(17, 0)")
 
 
-	// 	svgs.exit().remove();
+		svgs.exit().remove();
 
 	//Add little barcode marks per respective svg
-	// var blips = d3.selectAll(".bsvgs").selectAll("rect")
-	// 			.data(function(d) {
-	// 				return d;
-	// 			})
+	var blips = d3.selectAll("#barcode").selectAll("rect")
+				.data(function(d) {
+					var vz = d3.map(d);
+					var vzs = vz.values();
+					return vzs;
+				})
 
-	// 	blips.enter()
-	// 		.append("rect")
-	// 			.attr("class", "bloop")
-	// 			.attr("id", function(d, i) {
-	// 				return i;
-	// 			})
-	// 			.attr("width", "3px")
-	// 			.attr("height", barcodeHeight)	
-	// 			.attr("x", function(d) {
-	// 				return chartScale(d);
-	// 			})
-	// 			.style("fill", function(d) { // fill based on slider vals
-	// 				var values = stdSlider.noUiSlider.get();
-	// 				left = values[0];
-	// 				right = values[1];
-	// 				if (((+d) <=left) || ((+d)>=right)) {
-	// 					return "orange";
-	// 				} else {
-	// 					return "#969696";
-	// 				}
-	// 			})
-	// 			.style("stroke-width", "1px")
-	// 			.style("stroke", "#ededed")
-	// 			.on("mouseover", function(d) {
-	// 				var currid = this.id;
-	// 				d3.selectAll(".bloop").style("fill", function(d) {
-	// 					if (this.id == currid) {
-	// 						return "blue";
-	// 					} else {
-	// 						return colorUp(d);
-	// 					}
-	// 				});
-	// 			})
-	// 			.on("mouseout", function() {
-	// 				d3.selectAll(".bloop").style("fill", function(d) {
-	// 					return colorUp(d);
-	// 				});
-	// 				d3.selectAll(".unselected").style("fill", "gray");
-	// 				d3.selectAll("circle").style("fill", "gray");
-	// 			})
-	// 			.on("click", function() {
-	// 				var currid = this.id;
-	// 				// interaction for isolating the connected marks
-	// 				d3.selectAll(".bloop").style("fill", function(d) {
-	// 					if (this.id == currid) {
-	// 						if(colorUp(d) == "orange") {
-	// 							return "orange";
-	// 						} else {
-	// 							return "gray";
-	// 						}
-	// 					return "blue";
-	// 					} else {
-	// 						return "none";
-	// 					}
-	// 				});
+		x.domain([0, mmax]);
+		console.log(x(83));
+
+		blips.enter()
+			.append("rect")
+				.attr("id", function(d, i) {
+					return i;
+				})
+				.attr("class", "bloop")
+				.attr("width", "3px")
+				.attr("height", barcodeHeight)	
+				.attr("x", function(d) {
+					return x(d);
+				})
+				.style("stroke-width", "1px")
+				.style("stroke", "#ededed")
+				.style("fill", function(d) { // fill based on slider vals
+					var values = stdSlider.noUiSlider.get();
+					left = values[0];
+					right = values[1];
+					if (((d) <=left) || ((d)>=right)) {
+						return "orange";
+					} else {
+						return "#969696";
+					}
+				})
+				.on("mouseover", function(d) {
+					console.log(d);
+					var currid = this.id;
+					d3.selectAll(".bloop").style("fill", function(d) {
+						if (this.id == currid) {
+							return "blue";
+						} else {
+							return colorUp(d);
+						}
+					});
+				})
+				.on("mouseout", function() {
+					d3.selectAll(".bloop").style("fill", function(d) {
+						return colorUp(d);
+					});
+					d3.selectAll(".unselected").style("fill", "gray");
+					d3.selectAll("circle").style("fill", "gray");
+				})
+				.on("click", function() {
+					var currid = this.id;
+					// interaction for isolating the connected marks
+					d3.selectAll(".bloop").style("fill", function(d) {
+						if (this.id == currid) {
+							if(colorUp(d) == "orange") {
+								return "orange";
+							} else {
+								return "gray";
+							}
+						return "blue";
+						} else {
+							return "none";
+						}
+					});
 					
-	// 				// 	// interaction for hilighting the respective data point circle
-	// 				d3.selectAll("circle").style("fill", function(d) {
-	// 					var thisid = itemID(d);
-	// 					if (thisid == currid) {
-	// 							return "gray";
-	// 					} else {
-	// 							return "none";
-	// 					}
-	// 				})
+					// 	// interaction for hilighting the respective data point circle
+					// d3.selectAll("circle").style("fill", function(d) {
+					// 	var thisid = itemID(d);
+					// 	if (thisid == currid) {
+					// 			return "gray";
+					// 	} else {
+					// 			return "none";
+					// 	}
+					// })
 
-	// 		})
+			})
 
-
-	// var labels = d3.selectAll(".bsvgs").selectAll("text")
-	// 		.data(function(d, i) {
-	// 			var list = datamap.keys();
-	// 			// console.log(list[i]);
-	// 			return list[i];
-	// 		})
-
-	// 	labels.enter()
-	// 			.append("text")
-	// 				.attr("class", "labels")
-	// 				.text(function(d) {
-	// 					return d;
-	// 				})
-	// 				.attr("x", function(d, i) {
-	// 					return (5*(i+1)) + 20;
-	// 				})
-	// 				.attr("y", barcodeHeight/2)
-	// 				.attr("transform", "translate(-20, 5)")
-	// 				.style("padding", "5px")
-
-	// 	labels.exit().remove();
 });
 
 // makeBars(data);
@@ -196,7 +204,7 @@ get_barcode_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(re
 
 // eventually will be functionality for the drop down control above the barcode charts
 // leave this along for now I guess
-$("#sorts").on("change", function() {
-	console.log("doesn't work right this second");
+// $("#sorts").on("change", function() {
+// 	console.log("doesn't work right this second");
 
-});
+// });
