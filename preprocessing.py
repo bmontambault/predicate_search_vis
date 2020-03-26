@@ -22,10 +22,23 @@ def get_distances(data, mean, cov, features):
     records = dict(zip(range(len(data)), dist.tolist()))
     return records
 
-def get_projection(data, features):
-    tsne = TSNE(n_components=2)
-    X = tsne.fit_transform(data[features])
-    records = pd.DataFrame(X).rename(columns={0: 'x', 1: 'y'}).assign(index=range(len(data))).to_dict('records')
+def get_projection(data, features, z_scores=None):
+    if len(features) == 1:
+        print('1', features)
+        x = list(data[features].values.ravel())
+        y = list(z_scores)
+        records = [{'x': x[i], 'y': y[i]} for i in range(len(x))]
+    elif len(features) == 2:
+        print('2', features)
+        x = list(data[features[0]].values.ravel())
+        y = list(data[features[1]].values.ravel())
+        records = [{'x': x[i], 'y': y[i]} for i in range(len(x))]
+    else:
+        print('3', features)
+        tsne = TSNE(n_components=2)
+        X = tsne.fit_transform(data[features])
+        records = pd.DataFrame(X).rename(columns={0: 'x', 1: 'y'}).assign(index=range(len(data))).to_dict('records')
+    print(records[:10])
     return records
 
 def preprocessing(data, k=3):
@@ -44,7 +57,7 @@ def preprocessing(data, k=3):
             print(f'getting distances for {features}')
             dist = get_distances(data, clf.mean, clf.cov, features)
             print(f'getting projections for {features}')
-            proj = get_projection(data, features)
+            proj = get_projection(data, features, dist.values())
             key = ','.join(features)
             distances[key] = dist
             projections[key] = proj
