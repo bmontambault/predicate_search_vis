@@ -1,6 +1,7 @@
+// bars.js 
+// -------------------------------------------------------
 
-// console.log("Generating the barcode charts...");
-
+// api call to get barcode data
 function get_barcode_data(index, targets){
 
     return $.ajax({
@@ -16,21 +17,27 @@ function get_barcode_data(index, targets){
     });
 }
 
+var div = d3.select("body").append("div")	
+    .attr("class", "tooltip")				
+    .style("opacity", 0);
+
+// set dimensions of the barcode vis
 var barcodeWidth = $("#bars").width()-40;
 var barsheight = $("#bars").height()-10;
 var barcodeHeight = 32;
-console.log(barcodeWidth);
+
+// set visual domain of the x axis of the barcode charts
 var x = d3.scaleLinear()
-		.range([0, barcodeWidth]) 
+		.range([1, barcodeWidth-5]) 
 
-// this function color the little bar marks based on the
-// values of the slider
-
+// get data from api and build a chart with it
 get_barcode_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(res) {
 
+	// process the data, create a map for better handling
 	var ks = [];
 	var vals = [];
 	var dict = {};
+	// var feats = d3.map();
 
 	var datamap = d3.map(res);
 
@@ -43,7 +50,7 @@ get_barcode_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(re
 		vals.push(datamap[elem]);
 		dict[elem] = datamap[elem];
 	}
-
+	
 	var mmax = 0;
 
 	for (var i = 0; i < vals.length; i++) {
@@ -54,68 +61,89 @@ get_barcode_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(re
 		}
 	}
 
-// This part just sets up the slider, no need to mess with this I don't think
-var stdSlider = document.getElementById('controls');
-var ninefive = Math.floor(0.95*(mmax));
+	// This part just sets up the slider UI with the slider package (included)
+	var stdSlider = document.getElementById('controls');
+	var ninefive = Math.floor(0.95*(mmax));
 
-noUiSlider.create(stdSlider, {
-	start: [0, ninefive],
-	connect: false,
-	tooltips: true,
-	range: {
-		'min': 0,
-		'max': mmax+1
-	},
-	format: wNumb({
-		decimals: 0
-	})
-});
+	noUiSlider.create(stdSlider, {
+		start: [ninefive],
+		connect: false,
+		tooltips: true,
+		range: {
+			'min': 0,
+			'max': mmax+1
+		},
+		format: wNumb({
+			decimals: 0
+		})
+	});
 
+// function to color the marks based on the slider values
 function colorUp(d) {
-	var values = stdSlider.noUiSlider.get();
-	var left = values[0];
-	var right = values[1];
-		if (((d) <=left) || ((d)>=right)) {
+	var value = stdSlider.noUiSlider.get();
+		if ((d)>=value) {
 			return "orange";
 		} else {
 			return "gray";
 		}
 }
 
-	// Add an svg for each element
+	// Add an svg for each feature
 	var svgs = d3.select("#bars")
 				.selectAll("svg")
 					.data(vals)
 
 		svgs.enter()
 			.append("svg")
-				.attr("id", "barcode")
-				.attr("class", "bsvgs")
+				.attr("id", function(d, i) {
+					return i;
+				})
+				.attr("class", "barcode")
 				.attr("width", barcodeWidth)
 				.attr("height", barcodeHeight)
 				.style("background-color", "#e8e8e8")
 				.attr("transform", "translate(17, 0)")
+				.on("mouseover", function(d) {
+					div.transition()		
+		                .duration(300)		
+		                .style("opacity", 1);		
+		            div.html("<b>Feature: </b>" + ks[this.id] + "<br>" + "<b>Anomalies: </b>")	
+		                .style("left", (d3.event.pageX + 10) + "px")		
+		                .style("top", (d3.event.pageY - 28) + "px");	
+				})
+				.on("mouseout", function() {
+					div.transition()		
+		                .duration(500)		
+		                .style("opacity", 0);
+				})
+				.on("click", function() {
 
+					if (d3.select(this).classed("clicked")) {
+						d3.select(this).classed("clicked", false);
+					} else {
+						d3.select(this).classed("clicked", true);
+					}
+				})
 
+		// if the features get updated but I don't think they will...
 		svgs.exit().remove();
 
-	//Add little barcode marks per respective svg
-	var blips = d3.selectAll("#barcode").selectAll("rect")
+	//Add little barcode marks per respective feaure svg
+	var marks = d3.selectAll(".barcode").selectAll("rect")
 				.data(function(d) {
 					var vz = d3.map(d);
 					var vzs = vz.values();
 					return vzs;
 				})
 
-		x.domain([0, mmax]);
-		console.log(x(83));
+		x.domain([0, mmax+1]);
 
-		blips.enter()
+		marks.enter()
 			.append("rect")
 				.attr("id", function(d, i) {
 					return i;
 				})
-				.attr("class", "bloop")
+				.attr("class", "mark")
 				.attr("width", "3px")
 				.attr("height", barcodeHeight)	
 				.attr("x", function(d) {
@@ -124,19 +152,16 @@ function colorUp(d) {
 				.style("stroke-width", "1px")
 				.style("stroke", "#ededed")
 				.style("fill", function(d) { // fill based on slider vals
-					var values = stdSlider.noUiSlider.get();
-					left = values[0];
-					right = values[1];
-					if (((d) <=left) || ((d)>=right)) {
+					var value = stdSlider.noUiSlider.get();
+					if (d>=value) {
 						return "orange";
 					} else {
 						return "#969696";
 					}
 				})
 				.on("mouseover", function(d) {
-					console.log(d);
 					var currid = this.id;
-					d3.selectAll(".bloop").style("fill", function(d) {
+					d3.selectAll(".mark").style("fill", function(d) {
 						if (this.id == currid) {
 							return "blue";
 						} else {
@@ -145,7 +170,7 @@ function colorUp(d) {
 					});
 				})
 				.on("mouseout", function() {
-					d3.selectAll(".bloop").style("fill", function(d) {
+					d3.selectAll(".mark").style("fill", function(d) {
 						return colorUp(d);
 					});
 					d3.selectAll(".unselected").style("fill", "gray");
@@ -154,7 +179,7 @@ function colorUp(d) {
 				.on("click", function() {
 					var currid = this.id;
 					// interaction for isolating the connected marks
-					d3.selectAll(".bloop").style("fill", function(d) {
+					d3.selectAll(".mark").style("fill", function(d) {
 						if (this.id == currid) {
 							if(colorUp(d) == "orange") {
 								return "orange";
@@ -179,28 +204,29 @@ function colorUp(d) {
 
 			})
 
+	var backwards = d3.scaleLinear()
+					.domain([0, barcodeWidth])
+					.range([0, 100])
+	function recolor() {
+		d3.selectAll(".mark").style("fill", function() {
+			var lilval = (Math.floor(backwards(this.x.baseVal.value)));
+			return colorUp(lilval);
+	})
+};
+
+	stdSlider.noUiSlider.on('change', recolor);
+
 });
 
-// makeBars(data);
 
 // reverse domain function for recoloring bar marks based on slider values
-// var backwards = d3.scaleLinear()
-// 					.domain([0, barcodeWidth])
-// 					.range([0, 100])
+
 
 // recolor function for barcode marks when the slider moves
-// function recolor() {
-// 	d3.selectAll(".bloop").style("fill", function() {
-// 		var values = stdSlider.noUiSlider.get();
-// 		left = values[0];
-// 		right = values[1];
-// 		var lilval = (Math.floor(backwards(this.x.baseVal.value)));
-// 		return colorUp(lilval);
-// 	})
-// };
 
 
-// stdSlider.noUiSlider.on('change', recolor);
+
+
 
 // eventually will be functionality for the drop down control above the barcode charts
 // leave this along for now I guess

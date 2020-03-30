@@ -2,7 +2,7 @@
 <html lang="en-US">
 <html>
 <head>
-	<title>Scorpion++ Demo</title>
+	<title>PIXAL Demo</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="shortcut icon" href="#">
@@ -21,7 +21,7 @@
 		<!-- The very tippy top header portion with the title -->
 		<header>
 			<nav></nav>
-			<h2>Scorpion++<h2>
+			<h2>PIXAL<h2>
 			<nav></nav>
 		</header>
 		<main>
@@ -51,10 +51,16 @@
 			<div class = "middle">
 
 				<!-- The whole scatter plot -->
-				<div id = "scatter"></div>
+				<div id = "scatter">
+					<div id= "welcome">
+						<p>Welcome to PIXAL</p>
+						<p>Select one or more features from the left "barcode" panel to start.</p>
+					</div>
+				</div>
 
 			<!-- 	These are the little tab guys themselves -->
 				<div class = "tabs">
+
 <!-- 					<button class = "tablink" onclick="showTab('one', this, 'white')" id="defaultOpen">Recipe 1</button>
 					<button class = "tablink" onclick="showTab('two', this, 'white')">Recipe 2</button>
 					<button class = "tablink" onclick="showTab('three', this, 'white')">Recipe 3</button>
@@ -63,6 +69,7 @@
 
 				<!-- Div below the tabs themselves. Content changes dynamically via tabs.js -->
 				<div class = "explain">
+					<p style="padding-left: 20px;">Select variables from the left panel to start</p>
 <!-- 					<div id = "one" class="content">Bacon ipsum dolor</div> -->
 				</div>
 				
@@ -71,10 +78,14 @@
 			<!-- The whole right panel -->
 			<div id = "right">
 				<!-- Place holder -->
-				<div id="right-controls">Something about things and stuff regarding these crazy town line charts?</div>
+				<div id="right-controls">Predicate ranges:</div>
 
 				<!-- The line chart viz's -->
-				<div id = "sml-mpls"></div>
+				<div id = "sml-mpls">
+					<div id="welcome">
+						<p>Select one or more features from the left "barcode" panel to start.</p>
+					</div>
+				</div>
 			</div>
 
 		</main>
@@ -95,7 +106,7 @@
 <!-- These are the js files that hold the d3 for the viz's themselves. There's one per 
 line.js = the line charts on the right panel -->
 <script type="text/javascript" src="../static/js/bars.js"></script>
-<script type="text/javascript" src="../static/js/scatter.js"></script>
+<!-- <script type="text/javascript" src="../static/js/scatter.js"></script>
 <script type="text/javascript" src="../static/js/lines.js"></script>
 <script type="text/javascript" src="../static/js/button.js"></script>
-<script type="text/javascript" src="../static/js/tabs.js"></script>
+<script type="text/javascript" src="../static/js/tabs.js"></script> -->

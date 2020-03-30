@@ -5,6 +5,25 @@ body {
 	font-size:14px;
 }
 
+div.tooltip {   
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+    position: absolute;         
+    text-align: left;           
+    width: 200px;                   
+    height: 50px;                  
+    padding: 5px;               
+    font: 12px sans-serif;      
+    background: white;  
+    border: 0px;    
+    font-size: 14px;    
+    border-radius: 3px;         
+    pointer-events: none;
+    box-shadow: 4px 12px 10px #888888;      
+}
+
+
 h2 {
 	color:white;
 	font-size: 20px;
@@ -60,7 +79,7 @@ footer {
 	align-items: center;
 	align-content: center;
 	height: 99%;
-	width: 31%;
+	width: 27%;
 }
 
 #control-container {
@@ -68,18 +87,24 @@ footer {
 	flex-direction: column;
 	align-items: center;
 	justify-content: space-around;
-	height: 10%;
+	height: 12%;
 	width: 100%;
 	padding-bottom: 10px;
 	padding-top: 10px;
 }
 
-#select {
+#selects {
 	display: flex;
 	flex-direction: row;
-	justify-content: space-between;
-	align-items: flex-start;
+	justify-content: center;
+	align-items: center;
 	align-self: flex-start;
+	height: 27px;
+	width: 100%;
+}
+
+#selects label {
+	padding-right: 6px;
 }
 
 #sorts {
@@ -100,9 +125,8 @@ footer {
 }
 
 #bars {
-	align-self: right;
-	height: 86%;
-	width: 100%;
+	height: 83%;
+	width: 99%;
 	overflow-x: hidden;
 	overflow-y: auto;
 }
@@ -112,7 +136,7 @@ footer {
 	flex-direction: column;
 	align-items: center;
 	height: 99%;
-	width: 50%;
+	width: 44%;
 	justify-content: flex-start;
 }
 
@@ -165,7 +189,7 @@ footer {
 }
 
 .content {
-	display:flex;
+	display: none;
 	width: 100%;
 	padding: 1%;
 	height:90%;
@@ -177,7 +201,7 @@ footer {
 	align-items: center;
 	justify-content: center;
 	height: 100%;
-	width: 18%;
+	width: 27%;
 }
 
 
@@ -200,17 +224,25 @@ footer {
 	overflow-y:auto;
 }
 
-.bsvgs {
+.barcode {
 	border: 2px solid white;
+}
+
+.barcode:hover {
+	border: 2px solid gray;
+}
+
+.clicked {
+	border: 2px solid gray;
 }
 
 .linez {
 	border: 2px solid white;
 }
 
-.bsvgs:hover, .bsvgs:active {
+/*.barcode:hover, .barcode:active {
 	border: 2px solid gray;
-}
+}*/
 
 #slider {
 	display: flex;
@@ -250,4 +282,17 @@ footer {
 	border-radius: 3px;
 	background-color: rgba(125, 125, 125, .7);
 	color:white;
+}
+
+#welcome {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-content: center;
+	width: 90%;
+	height: 99%;
+	background-color: #f0f0f0;
+	font-size: 16px;
+	color: gray;
+	text-align: center;
 }
