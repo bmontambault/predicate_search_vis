@@ -17,6 +17,9 @@ function get_barcode_data(index, targets){
     });
 }
 
+var selectedFeats = new Object();
+var anoms = new Object();
+
 var div = d3.select("body").append("div")	
     .attr("class", "tooltip")				
     .style("opacity", 0);
@@ -30,26 +33,32 @@ var barcodeHeight = 32;
 var x = d3.scaleLinear()
 		.range([1, barcodeWidth-5]) 
 
+var bc_data = [];
 // get data from api and build a chart with it
+
 get_barcode_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(res) {
 
-	// process the data, create a map for better handling
-	var ks = [];
-	var vals = [];
-	var dict = {};
-	// var feats = d3.map();
-
-	var datamap = d3.map(res);
-
-	for (property in datamap) {
-		ks.push(property);
-	}
-
+	var l = 0;
+	var keys = Object.keys(res);
+	var len = keys.length
+	var vals = Object.values(res);
+	
 	for (var i = 0; i < 30; i++) {
-		var elem = ks[i];
-		vals.push(datamap[elem]);
-		dict[elem] = datamap[elem];
+
+		var trial = new Object()
+		trial = vals[i];
+		vals2 = Object.values(trial);
+
+		curr_obj = {};
+		curr_obj["fid"] = i;
+		curr_obj["feature"] = keys[i];
+		curr_obj["values"] = vals2;
+		curr_obj["anomalies"] = [];
+
+		bc_data.push(curr_obj);
 	}
+
+	console.log(bc_data[1]);
 	
 	var mmax = 0;
 
@@ -88,15 +97,34 @@ function colorUp(d) {
 		}
 }
 
+function updateAnoms(elem, orange) {
+
+	var dad_idx = d3.select(elem.parentNode)._groups[0][0].id;
+
+	if(bc_data[dad_idx].anomalies.includes(elem.id)) {
+		if(!orange) {
+			index = bc_data[dad_idx].anomalies.indexOf(elem.id);
+			 bc_data[dad_idx].anomalies.splice(index, 1);
+		}
+	} else {
+		if(orange) {
+			bc_data[dad_idx].anomalies.push(elem.id);
+		}
+	}
+}
+
+// console.log(updateAnoms(["69", "2", "4"], "5", false, true));
+
+function makeBars(bc_data) {
 	// Add an svg for each feature
 	var svgs = d3.select("#bars")
 				.selectAll("svg")
-					.data(vals)
+					.data(bc_data)
 
 		svgs.enter()
 			.append("svg")
-				.attr("id", function(d, i) {
-					return i;
+				.attr("id", function(d) {
+					return d.fid;
 				})
 				.attr("class", "barcode")
 				.attr("width", barcodeWidth)
@@ -106,8 +134,12 @@ function colorUp(d) {
 				.on("mouseover", function(d) {
 					div.transition()		
 		                .duration(300)		
-		                .style("opacity", 1);		
-		            div.html("<b>Feature: </b>" + ks[this.id] + "<br>" + "<b>Anomalies: </b>")	
+		                .style("opacity", 1);	
+
+		            var ftname = "<b>Feature:</b> " +  bc_data[+this.id].feature;
+		            var as = "<b>Anomalies:</b> " + (bc_data[+this.id].anomalies).length;
+
+		            div.html(ftname + "<br>" + as)	
 		                .style("left", (d3.event.pageX + 10) + "px")		
 		                .style("top", (d3.event.pageY - 28) + "px");	
 				})
@@ -116,24 +148,23 @@ function colorUp(d) {
 		                .duration(500)		
 		                .style("opacity", 0);
 				})
-				.on("click", function() {
-
+				.on("click", function(d) {
 					if (d3.select(this).classed("clicked")) {
 						d3.select(this).classed("clicked", false);
+						var ck = this.id;
+						delete selectedFeats[ck];
 					} else {
 						d3.select(this).classed("clicked", true);
+						selectedFeats[this.id] = "added";
 					}
+					console.log(selectedFeats);
 				})
 
-		// if the features get updated but I don't think they will...
 		svgs.exit().remove();
-
-	//Add little barcode marks per respective feaure svg
-	var marks = d3.selectAll(".barcode").selectAll("rect")
+// 	//Add little barcode marks per respective feaure svg
+	var marks = d3.selectAll("svg").selectAll("rect")
 				.data(function(d) {
-					var vz = d3.map(d);
-					var vzs = vz.values();
-					return vzs;
+					return d.values;
 				})
 
 		x.domain([0, mmax+1]);
@@ -154,6 +185,8 @@ function colorUp(d) {
 				.style("fill", function(d) { // fill based on slider vals
 					var value = stdSlider.noUiSlider.get();
 					if (d>=value) {
+						var dad_idx = d3.select(this.parentNode)._groups[0][0].id;
+						updateAnoms(this, true);
 						return "orange";
 					} else {
 						return "#969696";
@@ -191,42 +224,48 @@ function colorUp(d) {
 							return "none";
 						}
 					});
-					
-					// 	// interaction for hilighting the respective data point circle
-					// d3.selectAll("circle").style("fill", function(d) {
-					// 	var thisid = itemID(d);
-					// 	if (thisid == currid) {
-					// 			return "gray";
-					// 	} else {
-					// 			return "none";
-					// 	}
-					// })
-
 			})
+	}
+
+	makeBars(bc_data);
+
+	$("#sorts").change(function() {
+		console.log("drippity drop!");
+		var selection = $("#sorts").val();
+		console.log(selection);
+		if (selection == "Most anomalies"){
+			console.log("most anomalies");
+		} else if (selection == "Target variable name") {
+			console.log("target variable name");
+		}
+	})
+
 
 	var backwards = d3.scaleLinear()
 					.domain([0, barcodeWidth])
-					.range([0, 100])
+					.range([0, mmax+1])
+
 	function recolor() {
+
 		d3.selectAll(".mark").style("fill", function() {
 			var lilval = (Math.floor(backwards(this.x.baseVal.value)));
+			if (colorUp(lilval) == "orange") {
+				updateAnoms(this, true);
+				return colorUp(lilval);
+			}
+			updateAnoms(this, false);
 			return colorUp(lilval);
-	})
-};
+		})
+	};
 
 	stdSlider.noUiSlider.on('change', recolor);
-
+	
 });
 
 
 // reverse domain function for recoloring bar marks based on slider values
 
-
 // recolor function for barcode marks when the slider moves
-
-
-
-
 
 // eventually will be functionality for the drop down control above the barcode charts
 // leave this along for now I guess

@@ -6,13 +6,10 @@ body {
 }
 
 div.tooltip {   
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
     position: absolute;         
     text-align: left;           
     width: 200px;                   
-    height: 50px;                  
+    height: 60px;                  
     padding: 5px;               
     font: 12px sans-serif;      
     background: white;  
