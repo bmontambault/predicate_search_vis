@@ -1,6 +1,4 @@
 
-console.log("Generating the scatter plot/projection...");
-
 function get_scatter_data(index, targets){
 
     return $.ajax({
@@ -8,8 +6,15 @@ function get_scatter_data(index, targets){
         type: "POST",
         dataType: "JSON",
         data: JSON.stringify({'index':index, 'targets': targets}),
+        success: function(resp, data){
+            if (resp != null){
+                return resp;
+            }
+        }
     });
 }
+
+var batch = new Object();
 
 // grab the dimensions of the div we want
 var canvasW = $("#scatter").width();
@@ -17,84 +22,111 @@ var canvasH = $("#scatter").height();
 
 // setting up dimensions for the scatter plot
 var margin = {top:10, right:10, bottom: 20, left:20},
-	width = canvasW - margin.left - margin.right;
-	height = canvasH - margin.top - margin.bottom;
+	sc_width = canvasW - margin.left - margin.right;
+	sc_height = canvasH - margin.top - margin.bottom;
 
 // ranges for the x and y axes on the screen
-var x = d3.scaleLinear()
-			.range([0, width-40]);
+var sct_x = d3.scaleLinear()
+			.range([0, sc_width-40]);
 
-var y = d3.scaleLinear()
-			.range([height-30, 0]);
+var sct_y = d3.scaleLinear()
+			.range([sc_height-30, 0]);
 
-	// create an svg for the scatter plot
+
 var svg = d3.select("#scatter")
-			.append("svg")
-				.attr("width", width)
-				.attr("height", height)
-				.style("border", "2px solid #e8e8e8")
-				.style("border-radius", "5px")
-				.append("g")
-					.attr("transform", "translate(" + (margin.left+10) + ", " + margin.top + ")")
+		.append("svg")
+			.attr("width", sc_width)
+			.attr("height", sc_height)
+			.style("border", "2px solid #e8e8e8")
+			.style("border-radius", "5px")
+			.append("g")
+				.attr("transform", "translate(" + (margin.left+10) + ", " + margin.top + ")")
+
 
 // collect data from api and build the scatter plot
-get_scatter_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(res) {
-	
-	// console.log(res);
+function makeScatter(idxs, feats) {
 
-	// domains for the input from the data
-	x.domain(d3.extent(res, function(d) { return +(d.x)}));
-	y.domain(d3.extent(res, function(d) { return +(d.y)}));
+	get_scatter_data(idxs, feats).then(function(res) {
 
-	//instantiate the axes for x and y
-	var xAxis = d3.axisBottom(x);
-	var yAxis = d3.axisLeft(y);
+		console.log(res[0]);
+		console.log(res[1]);
 
-		// draw a point for each data point
-		svg.selectAll("circle")
-				.data(res)
-				.enter()
-				.append("circle")
-					.attr("id", function(d) {
-						return d.index;
-					})
-					.attr("r", "4px")
-					.attr("cx", function(d) {
-						return (x(+(d.x)));
-					})
-					.attr("cy", function(d) {
-						return (y(+(d.y)))
-					})
-					.style("fill", "gray")
-})
+		// domains for the input from the data
+		sct_x.domain(d3.extent(res, function(d) { return +(d.x)}));
+		sct_y.domain(d3.extent(res, function(d) { return +(d.y)}));
 
-// update function. Anytime a change is made the data, the vis will get redrawn
-// as long as you give it the updated data.
-
-function updateScatter(data) {
-
-	var svgCircles = d3.selectAll("circle")
-						.data(data)
-
-		svgCircles.enter()
-			.append("circle")
-			.attr("id", function(d) {
-				return d.index;
-			})
-			.attr("r", "4px")
-				.attr("cx", function(d) {
-					return (x(+(d.x)));
-				})
-				.attr("cy", function(d) {
-					return (y(+(d.y)))
-				})
-				.style("fill", "blue");
-
-		svgCircles.exit().remove();
+			// draw a point for each data point
+			svg.selectAll("circle")
+					.data(res)
+					.enter()
+					.append("circle")
+						.attr("id", function(d, i) {
+							return i;
+						})
+						.attr("r", "4px")
+						.attr("cx", function(d) {
+							return (sct_x(+(d.x)));
+						})
+						.attr("cy", function(d) {
+							return (sct_y(+(d.y)))
+						})
+						.style("fill", "gray")
+						.transition().duration(500)
+	})
 }
 
+// // update function. Anytime a change is made the data, the vis will get redrawn
+// // as long as you give it the updated data.
+
+function update(data) {
+
+	// console.log("in update!");
+	// console.log(data[0]);
+	// console.log(data[1]);
+
+	sct_x.domain(d3.extent(data, function(d) { return +(d.x)}));
+	sct_y.domain(d3.extent(data, function(d) { return +(d.y)}));
+
+	var svgCircles = svg.selectAll("circle")
+					.data(data);
+
+	// draw a point for each data point
+		svgCircles.enter()
+			.append("circle")
+				.attr("id", function(d, i) {
+					console.log(d.index);
+					return i;
+				})
+				.attr("r", "4px")
+				.attr("cx", function(d) {
+					console.log("HELLOOOO???")
+					return (sct_x(+(d.x)));
+				})
+				.attr("cy", function(d) {
+					return (sct_y(+(d.y)))
+				})
+				.style("fill", "blue")
+				.transition().duration(500)
+
+	svgCircles.exit().remove();
+
+}
+
+function updateScatter(idxs, feats) {
+	get_scatter_data(idxs, feats).then(function(res) {
+		update(res);
+	})
+}
+
+
+function runData() {
+
+}
+
+
+
 svg.append("g")
-      .call(d3.brush().extent([[0, 0], [width, height]])
+      .call(d3.brush().extent([[0, 0], [sc_width, sc_height]])
       	.on("brush", brushed)
       	.on("end", brushended));
 
@@ -110,19 +142,22 @@ function brushed() {
 	d3.selectAll("circle")
 			.style("fill", function(d) {
 
-				if (x(d.x) >= x0 && x(d.x) <= dx && y(d.y) >= y0 && y(d.y) <= dy) {
+				if (sct_x(d.x) >= x0 && sct_x(d.x) <= dx && sct_y(d.y) >= y0 && sct_y(d.y) <= dy) {
 					return "blue";
 				} else {
 					return "gray";
 				}
 			})
 			.attr("class", function(d) {
-				if (x(d.x) >= x0 && x(d.x) <= dx && y(d.y) >= y0 && y(d.y) <= dy) {
+				if (sct_x(d.x) >= x0 && sct_x(d.x) <= dx && sct_y(d.y) >= y0 && sct_y(d.y) <= dy) {
+					batch[this.id] = this.id;
 					return "selected";
 				} else {
 					return "unselected";
+					delete batch[this.id];
 				}
 			})
+
 }
 
 
@@ -136,3 +171,4 @@ function brushended() {
 			.style("fill", "gray")
 		}
 }
+

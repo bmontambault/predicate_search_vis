@@ -31,14 +31,16 @@
 
 				<!-- This is the whole controls above the bars viz -->
 				<div id = control-container>
+					<p id="control-title">Target variable Z-Scores</p>
 					<div id="controls" style="color:black";></div>
 					<div id="selects">
-						<label style="color:gray; font-size:14px;" for="sorts">Sort by: </label>
+<!-- 						<label style="color:gray; font-size:14px;" for="sorts">Sort by: </label> -->
 						<select id = "sorts">
-							<option>Choose one:</option>
+							<option>Sort by:</option>
 							<option>Target variable name</option>
 							<option>Most anomalies</option>
 						</select>
+						<button id = "genScat">Generate projection</button>
 					</div>
 				</div>
 				
@@ -52,19 +54,21 @@
 
 				<!-- The whole scatter plot -->
 				<div id = "scatter">
-					<div id= "welcome">
+					<div id= "welcome-scatter">
 						<p>Welcome to PIXAL</p>
-						<p>Select one or more features from the left "barcode" panel to start.</p>
+						<p>Select a feature from the left "barcode" panel to start.</p>
 					</div>
 				</div>
 
 			<!-- 	These are the little tab guys themselves -->
-				<div class = "tabs">
+				<div class = "mid-control">
+					<div class = "tabs">
 
-<!-- 					<button class = "tablink" onclick="showTab('one', this, 'white')" id="defaultOpen">Recipe 1</button>
-					<button class = "tablink" onclick="showTab('two', this, 'white')">Recipe 2</button>
-					<button class = "tablink" onclick="showTab('three', this, 'white')">Recipe 3</button>
-					<button class = "go">Run model</button> -->
+	<!-- 					<button class = "tablink" onclick="showTab('one', this, 'white')" id="defaultOpen">Recipe 1</button>
+						<button class = "tablink" onclick="showTab('two', this, 'white')">Recipe 2</button>
+						<button class = "tablink" onclick="showTab('three', this, 'white')">Recipe 3</button> -->
+					</div>
+					<button class = "go">Run model</button>
 				</div>
 
 				<!-- Div below the tabs themselves. Content changes dynamically via tabs.js -->
@@ -82,9 +86,6 @@
 
 				<!-- The line chart viz's -->
 				<div id = "sml-mpls">
-					<div id="welcome">
-						<p>Select one or more features from the left "barcode" panel to start.</p>
-					</div>
 				</div>
 			</div>
 
@@ -106,7 +107,7 @@
 <!-- These are the js files that hold the d3 for the viz's themselves. There's one per 
 line.js = the line charts on the right panel -->
 <script type="text/javascript" src="../static/js/bars.js"></script>
-<!-- <script type="text/javascript" src="../static/js/scatter.js"></script>
-<script type="text/javascript" src="../static/js/lines.js"></script>
-<script type="text/javascript" src="../static/js/button.js"></script>
-<script type="text/javascript" src="../static/js/tabs.js"></script> -->
+<script type="text/javascript" src="../static/js/scatter.js"></script>
+<!-- <script type="text/javascript" src="../static/js/lines.js"></script>
+<script type="text/javascript" src="../static/js/button.js"></script> -->
+<script type="text/javascript" src="../static/js/tabs.js"></script>
