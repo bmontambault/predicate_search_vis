@@ -105,7 +105,7 @@ function update(data) {
 				.attr("cy", function(d) {
 					return (sct_y(+(d.y)))
 				})
-				.style("fill", "blue")
+				.style("fill", "gray")
 				.transition().duration(500)
 
 	svgCircles.exit().remove();

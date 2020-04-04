@@ -397,6 +397,7 @@ $("#genScat").on("click", function() {
 		if($("#welcome-scatter").length) {
 
 			$("#welcome-scatter").remove();
+			$("welcome-tabs").remove();
 			// makeScatter([], feats[0]);
 			makeScatter([], "radius_mean,perimeter_mean")
 
