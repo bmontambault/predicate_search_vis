@@ -37,8 +37,8 @@ $(".go").on("click", function() {
 			generateTabs([1, 2, 3, 4, 5], "radius_mean,perimeter_mean");
 
 		} else {
-			feats[0];
-			generateTabs([1, 2, 3, 4, 5], "radius_mean,perimeter_mean");
+			// feats[0];
+			generateTabs([4, 5, 8, 9, 14], "radius_mean,perimeter_mean");
 		}
 	}
 })

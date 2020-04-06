@@ -35,6 +35,17 @@ var bar_x = d3.scaleLinear()
 
 var bc_data = [];
 // get data from api and build a chart with it
+var stdSlider = document.getElementById('controls');
+var ninefive = 0;
+
+function colorUp(d) {
+	var value = stdSlider.noUiSlider.get();
+		if ((d)>=value) {
+			return "orange";
+		} else {
+			return "gray";
+		}
+}
 
 get_barcode_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(res) {
 
@@ -78,7 +89,7 @@ get_barcode_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(re
 	console.log(bc_data)
 
 	// This part just sets up the slider UI with the slider package (included)
-	var stdSlider = document.getElementById('controls');
+	// var stdSlider = document.getElementById('controls');
 	var ninefive = Math.floor(0.95*(mmax));
 
 	noUiSlider.create(stdSlider, {
@@ -106,14 +117,14 @@ get_barcode_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(re
 
 
 // function to color the marks based on the slider values
-function colorUp(d) {
-	var value = stdSlider.noUiSlider.get();
-		if ((d)>=value) {
-			return "orange";
-		} else {
-			return "gray";
-		}
-}
+// function colorUp(d) {
+// 	var value = stdSlider.noUiSlider.get();
+// 		if ((d)>=value) {
+// 			return "orange";
+// 		} else {
+// 			return "gray";
+// 		}
+// }
 
 function updateAnoms(elem, orange) {
 
@@ -189,8 +200,8 @@ function makeBars(bc_data) {
 		            var as = "<b>Anomalies:</b> " + (bc_data[+this.id].anomalies).length;
 
 		            div.html(ftname + "<br>" + ftid + "<br>" + as)	
-		                .style("left", (d3.event.pageX + 10) + "px")		
-		                .style("top", (d3.event.pageY - 28) + "px");	
+		                .style("left", (d3.event.pageX + 70) + "px")		
+		                .style("top", (d3.event.pageY + 55) + "px");	
 				})
 				.on("mouseout", function() {
 					div.transition()		
@@ -253,8 +264,6 @@ function makeBars(bc_data) {
 					return 0;
 					// return x(d);
 				})
-				.style("stroke-width", "1px")
-				.style("stroke", "#ededed")
 				.style("fill", function(d) { // fill based on slider vals
 					var value = stdSlider.noUiSlider.get();
 					if (d>=value) {
@@ -265,15 +274,23 @@ function makeBars(bc_data) {
 						return "#969696";
 					}
 				})
+				.style("opacity", .7)
 				.on("mouseover", function(d) {
 					var currid = this.id;
 					d3.selectAll(".mark").style("fill", function(d) {
 						if (this.id == currid) {
 							return "blue";
 						} else {
-							return colorUp(d);
+							return colorUp(this.id);
 						}
 					});
+					d3.selectAll("circle").style("fill", function(d) {
+						if (this.id == currid) {
+							return "blue";
+						} else {
+							return colorUp(d);
+						}
+					})
 				})
 				.on("mouseout", function() {
 					d3.selectAll(".mark").style("fill", function(d) {
@@ -306,7 +323,7 @@ function makeBars(bc_data) {
 							.attr("fill", function(d) {
 								colorUp(d);
 							})
-							.delay(600)
+							.delay(300)
 
 		marks.exit().remove();
 	}

@@ -14,6 +14,15 @@ function get_scatter_data(index, targets){
     });
 }
 
+// function colorUp(d) {
+// 	var value = stdSlider.noUiSlider.get();
+// 		if ((d)>=value) {
+// 			return "orange";
+// 		} else {
+// 			return "gray";
+// 		}
+// }
+
 var batch = new Object();
 
 // grab the dimensions of the div we want
@@ -47,9 +56,7 @@ var svg = d3.select("#scatter")
 function makeScatter(idxs, feats) {
 
 	get_scatter_data(idxs, feats).then(function(res) {
-
 		console.log(res[0]);
-		console.log(res[1]);
 
 		// domains for the input from the data
 		sct_x.domain(d3.extent(res, function(d) { return +(d.x)}));
@@ -63,15 +70,21 @@ function makeScatter(idxs, feats) {
 						.attr("id", function(d, i) {
 							return i;
 						})
-						.attr("r", "4px")
+						.attr("r", "5px")
 						.attr("cx", function(d) {
 							return (sct_x(+(d.x)));
 						})
 						.attr("cy", function(d) {
 							return (sct_y(+(d.y)))
 						})
-						.style("fill", "gray")
-						.transition().duration(500)
+						.style("fill", function(d) {
+							return colorUp(this.id);
+						})
+						.style("stroke-width", "1px")
+						.style("stroke", "white")
+						.style("opacity", 0)
+						.transition().duration(300)
+							.style("opacity", 1)
 	})
 }
 
@@ -80,13 +93,8 @@ function makeScatter(idxs, feats) {
 
 function update(data) {
 
-	// console.log("in update!");
-	// console.log(data[0]);
-	// console.log(data[1]);
-
 	sct_x.domain(d3.extent(data, function(d) { return +(d.x)}));
 	sct_y.domain(d3.extent(data, function(d) { return +(d.y)}));
-
 	var svgCircles = svg.selectAll("circle")
 					.data(data);
 
@@ -94,22 +102,23 @@ function update(data) {
 		svgCircles.enter()
 			.append("circle")
 				.attr("id", function(d, i) {
-					console.log(d.index);
 					return i;
 				})
-				.attr("r", "4px")
+				.attr("r", "5px")
 				.attr("cx", function(d) {
-					console.log("HELLOOOO???")
 					return (sct_x(+(d.x)));
 				})
 				.attr("cy", function(d) {
 					return (sct_y(+(d.y)))
 				})
 				.style("fill", "gray")
+				.style("stroke", "white")
+				.style("stroke-width", "1px")
+				.style("opacity", 0)
 				.transition().duration(500)
+								.style("opacity", 1)
 
 	svgCircles.exit().remove();
-
 }
 
 function updateScatter(idxs, feats) {
@@ -117,13 +126,6 @@ function updateScatter(idxs, feats) {
 		update(res);
 	})
 }
-
-
-function runData() {
-
-}
-
-
 
 svg.append("g")
       .call(d3.brush().extent([[0, 0], [sc_width, sc_height]])
@@ -138,7 +140,6 @@ function brushed() {
 				dx = s[1][0],
 				dy = s[1][1];
 
-
 	d3.selectAll("circle")
 			.style("fill", function(d) {
 
@@ -150,14 +151,15 @@ function brushed() {
 			})
 			.attr("class", function(d) {
 				if (sct_x(d.x) >= x0 && sct_x(d.x) <= dx && sct_y(d.y) >= y0 && sct_y(d.y) <= dy) {
-					batch[this.id] = this.id;
+					batch[this.id] = +this.id;
 					return "selected";
 				} else {
-					return "unselected";
 					delete batch[this.id];
+					return "unselected";
 				}
 			})
 
+		idMarks(batch);
 }
 
 
@@ -168,7 +170,32 @@ function brushended() {
 			.transition()
 			.duration(150)
 			.ease(d3.easeLinear)
-			.style("fill", "gray")
+			.style("fill", function(d) {
+				return colorUp(this.id);
+			})
 		}
+
+		d3.selectAll(".mark").style("fill", function(d) {
+			return colorUp(d);
+		});
+		d3.selectAll(".mark").style("opacity", .7);
+	
 }
 
+function idMarks(points) {
+	var pts = Object.values(batch);
+	d3.selectAll(".mark").style("fill", function(d) {
+		if (+this.id in pts)  {
+			return "blue";
+		} else {
+			return "#e8e8e8";
+		}
+	})
+	d3.selectAll(".mark").style("opacity", function(d) {
+		if (+this.id in pts)  {
+			return 1;
+		} else {
+			return 0;
+		}
+	})
+}
