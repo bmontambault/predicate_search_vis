@@ -13,6 +13,7 @@ with open(f'models/{dataset}.pkl', 'rb') as f:
     predicate_search = model['predicate_search']
     distances = model['distances']
     projections = model['projections']
+    data = model['data']
 
 @app.route('/')
 def index():
@@ -30,8 +31,8 @@ def get_zscores():
 def get_projections():
     request_data = request.get_json(force=True)
     targets = request_data['targets']
-    # print(projections[targets])
-    return json.dumps(projections[targets])
+    target_projections = projections[targets]
+    return json.dumps(target_projections)
 
 @app.route('/get_predicates', methods=['GET', 'POST'])
 def get_predicates():
@@ -41,7 +42,12 @@ def get_predicates():
 
     raw_predicates = predicate_search.search(targets, index)
     predicates = [p.get_obj() for p in raw_predicates]
-    return json.dumps(predicates)
+
+    target_data = data[targets.split(',')].to_dict('list')
+    predicate_data = data[[a for b in [d.keys() for d in predicates] for a in b]].to_dict('list')
+    print(target_data)
+    print(predicate_data)
+    return json.dumps({'predicates': predicates, 'target_data': target_data, 'predicate_data': predicate_data})
 
 if __name__ == "__main__":
     app.run()
