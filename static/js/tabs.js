@@ -65,11 +65,14 @@ function generateTabs(idxs, feats) {
 
 	get_preds(idxs, feats).then(function(res) {
 
+        predicates = res['predicates']
+        console.log(predicates)
+
 		// The first tab and tray contents
 		var $first_tab = $('<button class=" tablink tablink-selected" id="0">Predicate 1</button>');
 		$(".tabs").append($first_tab);
-		var first_feats = Object.keys(res[0]);
-		var first_ranges = Object.values(res[0]);
+		var first_feats = Object.keys(predicates[0]);
+		var first_ranges = Object.values(predicates[0]);
 		for (var k = 0; k < first_feats.length; k++) {
 
 			var child = first_feats[k] + ": " + first_ranges[k] + "<br>";
@@ -77,7 +80,7 @@ function generateTabs(idxs, feats) {
 		}
 
 		// The rest of the tabs 
-		for (var i = 1; i < res.length; i++) {
+		for (var i = 1; i < predicates.length; i++) {
 			var $curr_tab = $('<button class="tablink" id="' + i + '">Predicate ' + (i+1) + '</button>');
 			$(".tabs").append($curr_tab);
 
