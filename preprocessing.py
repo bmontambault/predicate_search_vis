@@ -27,12 +27,12 @@ def get_projection(data, features, z_scores=None):
         print('1', features)
         x = list(data[features].values.ravel())
         y = list(z_scores)
-        records = [{'x': x[i], 'y': y[i]} for i in range(len(x))]
+        records = [{'x': x[i], 'y': y[i], 'index': i} for i in range(len(x))]
     elif len(features) == 2:
         print('2', features)
         x = list(data[features[0]].values.ravel())
         y = list(data[features[1]].values.ravel())
-        records = [{'x': x[i], 'y': y[i]} for i in range(len(x))]
+        records = [{'x': x[i], 'y': y[i], 'index': i} for i in range(len(x))]
     else:
         print('3', features)
         tsne = TSNE(n_components=2)
