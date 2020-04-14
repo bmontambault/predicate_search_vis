@@ -2,29 +2,6 @@
 // This is just a js file to enable the interactivity of the tabs at the bottom. I don't think 
 // you'll need to mess with this, even if you want to generate the conent for the tabs themselves.
 
-// console.log("Building predicate tabs...");
-
-// function showTab(id, elem, color) {
-	
-// 	console.log("getting called?");
-// 	var i, tabcontent, tablinks;
-
-// 	tabcontent = document.getElementsByClassName("content");
-// 	for (i = 0; i < tabcontent.length; i++) {
-// 		tabcontent[i].style.display = "none";
-// 	}
-
-// 	tablinks = tabcontent = document.getElementsByClassName("tablink");
-// 		for (i = 0; i < tablinks.length; i++) {
-// 		tablinks[i].style.backgroundColor = "#e8e8e8";
-// 	}
-
-// 	document.getElementById(id).style.display = "flex";
-// 	elem.style.backgroundColor = c\olor;
-
-// }
-
-
 $(".go").on("click", function() {
 
 	var feats = Object.values(selectedFeats);
@@ -66,7 +43,6 @@ function generateTabs(idxs, feats) {
 	get_preds(idxs, feats).then(function(res) {
 
         predicates = res['predicates']
-        console.log(predicates)
 
 		// The first tab and tray contents
 		var $first_tab = $('<button class=" tablink tablink-selected" id="0">Predicate 1</button>');
@@ -89,8 +65,8 @@ function generateTabs(idxs, feats) {
 		$(".tablink").on("click", function() {
 
 			var elemid = +(this.id);
-			var curr_feats = Object.keys(res[elemid]);
-			var curr_ranges = Object.values(res[elemid]);
+			var curr_feats = Object.keys(predicates[elemid]);
+			var curr_ranges = Object.values(predicates[elemid]);
 			child = "";
 
 			$(".tablink").toggleClass("tablink-selected");
@@ -98,7 +74,6 @@ function generateTabs(idxs, feats) {
 			$(".explain").html(function() {
 				for (var k = 0; k < curr_feats.length; k++) {
 					child += curr_feats[k] + ": " + curr_ranges[k] + "<br>";
-					console.log(child);
 				}
 				return child;
 			})

@@ -86,8 +86,6 @@ get_barcode_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(re
 		btn.insertAfter($("#bars"));
 	}
 
-	console.log(bc_data)
-
 	// This part just sets up the slider UI with the slider package (included)
 	// var stdSlider = document.getElementById('controls');
 	var ninefive = Math.floor(0.95*(mmax));

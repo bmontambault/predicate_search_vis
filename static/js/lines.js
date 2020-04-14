@@ -11,11 +11,12 @@ function get_line_data(index, targets){
     });
 }
 
-// get_line_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(res) {
+get_line_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(res) {
 
-// 	console.log(res);
+	var pred_data = res['predicate_data'];
+	console.log(pred_data);
 
-// });
+
 
 // grab the dimensions of the div we want (right panel)
 var lineChartWidth = $("#sml-mpls").width() - 50;
@@ -34,19 +35,19 @@ var lineChartHeight = 100;
 // 		datamap = d3.map(datamap);
 
 // 	// add an svg for each line chart we want
-// 	var lsvgs = d3.select("#sml-mpls")
-// 			.selectAll("svg")
-// 				.data(datamap.values())
+	var lsvgs = d3.select("#sml-mpls")
+			.selectAll("svg")
+				.data(datamap.values())
 
-// 		lsvgs.enter()
-// 			.append("svg")
-// 				.attr("class", "linez")
-// 				.attr("width", lineChartWidth)
-// 				.attr("height", lineChartHeight)
-// 				.style("background-color", "#e8e8e8")
-// 				.append("g")
+		lsvgs.enter()
+			.append("svg")
+				.attr("class", "linez")
+				.attr("width", lineChartWidth)
+				.attr("height", lineChartHeight)
+				.style("background-color", "#e8e8e8")
+				.append("g")
 
-// 		lsvgs.exit().remove();
+		lsvgs.exit().remove();
 
 // 	// create the ranges for x and y on the screen for each line chart.
 // 	var x = d3.scaleTime().range([0, lineChartWidth]);
@@ -79,7 +80,7 @@ var lineChartHeight = 100;
 // 				.style("stroke", "gray")
 // 				.style("stroke-width", "1.5px")
 
-
+})
 
 // }
 
