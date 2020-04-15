@@ -21,6 +21,21 @@ div.tooltip {
     box-shadow: 4px 12px 10px #888888;      
 }
 
+.tooltip {   
+    position: absolute;         
+    text-align: left;           
+    width: auto;              
+    height: 60px;                  
+    padding: 5px;               
+    font: 12px sans-serif;      
+    background: white;  
+    border: 0px;    
+    font-size: 14px;    
+    border-radius: 3px;         
+    pointer-events: none;
+    box-shadow: 4px 12px 10px #888888;      
+}
+
 
 h2 {
 	color:white;
@@ -299,7 +314,15 @@ footer {
 
 .linez {
 	border: 2px solid white;
+	margin-bottom: 20px;
+	padding: 2px;
 }
+
+.linez:hover {
+	border: 2px solid gray;
+}
+
+
 
 #slider {
 	display: flex;

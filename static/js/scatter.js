@@ -14,15 +14,6 @@ function get_scatter_data(index, targets){
     });
 }
 
-// function colorUp(d) {
-// 	var value = stdSlider.noUiSlider.get();
-// 		if ((d)>=value) {
-// 			return "orange";
-// 		} else {
-// 			return "gray";
-// 		}
-// }
-
 var batch = new Object();
 
 // grab the dimensions of the div we want

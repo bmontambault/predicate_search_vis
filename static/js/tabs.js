@@ -42,7 +42,12 @@ function generateTabs(idxs, feats) {
 
 	get_preds(idxs, feats).then(function(res) {
 
-        predicates = res['predicates']
+        predicates = res['predicates'];
+
+    	var frst_elemid = 0;
+		var frst_curr_feats = Object.keys(predicates[0]);
+		var frst_curr_ranges = Object.values(predicates[0]);
+		makeLines(frst_curr_feats, frst_curr_ranges, frst_elemid);
 
 		// The first tab and tray contents
 		var $first_tab = $('<button class=" tablink tablink-selected" id="0">Predicate 1</button>');
@@ -77,6 +82,8 @@ function generateTabs(idxs, feats) {
 				}
 				return child;
 			})
+			console.log(curr_feats)
+			makeLines(curr_feats, curr_ranges, elemid);
 		})
 	});
 }
