@@ -82,7 +82,7 @@ function generateTabs(idxs, feats) {
 				}
 				return child;
 			})
-			console.log(curr_feats)
+
 			makeLines(curr_feats, curr_ranges, elemid);
 		})
 	});

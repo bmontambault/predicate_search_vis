@@ -34,6 +34,7 @@ var bar_x = d3.scaleLinear()
 		.range([1, barcodeWidth-5]) 
 
 var bc_data = [];
+
 // get data from api and build a chart with it
 var stdSlider = document.getElementById('controls');
 var ninefive = 0;
@@ -108,8 +109,17 @@ get_barcode_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(re
 				.range([0, mmax+1])
 
 	stdSlider.noUiSlider.on('change', function() {
-		console.log("hiiii");
 		recolor();
+		d3.selectAll("circle").style("fill", function(d) {
+			console.log(this.id);
+			if ((+this.id) in bc_data[+this.id].anomalies) {
+					return "orange";
+				} else {
+					return "gray"
+				}
+			return "gray";
+
+		})
 	});
 
 
@@ -151,10 +161,10 @@ function updateAnoms(elem, orange) {
 }
 
 $("#sorts").change(function() {
-	console.log("changingg")
+	// console.log("changingg")
 	var selection = $("#sorts").val();
 	if (selection == "Most anomalies"){
-		console.log("bc_data length: " + bc_data.length);
+		// console.log("bc_data length: " + bc_data.length);
 		var sorted = bc_data.sort(function(x, y){
 		   		return d3.descending(x.anomalies, y.anomalies);
 			})
@@ -171,6 +181,8 @@ $("#sorts").change(function() {
 })
 
 function makeBars(bc_data) {
+
+	console.log(bc_data)
 	var selected = false;
 	// Add an svg for each feature
 	var svgs = d3.select("#bars")
@@ -189,6 +201,7 @@ function makeBars(bc_data) {
 				.style("opacity", 0)
 				.attr("transform", "translate(17, 10)")
 				.on("mouseover", function(d) {
+					// console.log(bc_data[+this.id]);
 					div.transition()		
 		                .duration(300)		
 		                .style("opacity", 1);	
@@ -331,7 +344,7 @@ function makeBars(bc_data) {
 	
 	function recolor() {
 
-		console.log("calling recolor");
+		// console.log("calling recolor");
 		d3.selectAll(".mark").style("fill", function() {
 
 			var lilval = (Math.floor(backwards(this.x.baseVal.value)));
@@ -355,7 +368,7 @@ function makeBars(bc_data) {
 	function prepVizData(total, fullData) {
 
 		if ((k+10) < total) {
-			console.log("more to go");
+			// console.log("more to go");
 			for (var i = k; i < k+10; i++) {
 
 				var trial = new Object()
@@ -366,7 +379,7 @@ function makeBars(bc_data) {
 				curr_obj["fid"] = i;
 				curr_obj["feature"] = keys[i];
 				curr_obj["values"] = vals2;
-				curr_obj["anomalies"] = [i];
+				curr_obj["anomalies"] = [];
 
 				bc_data.push(curr_obj);
 			}
@@ -375,7 +388,7 @@ function makeBars(bc_data) {
 		} else if ((k+10) > total) {
 			
 			var remainder = total - k;
-			console.log("remainder: " + remainder);
+			// console.log("remainder: " + remainder);
 
 			for (var i = k; i < k+remainder; i++) {
 				var trial = new Object()
@@ -393,7 +406,7 @@ function makeBars(bc_data) {
 			k = k+remainder;
 			$("#seeMore").attr('disabled', true);
 		}
-		console.log(bc_data);
+		// console.log(bc_data);
 	}
 
 });
@@ -402,6 +415,7 @@ function makeBars(bc_data) {
 $("#genScat").on("click", function() {
 
 	var feats = Object.values(selectedFeats);
+	var fidx = +(Object.keys(selectedFeats));
 
 	// no features have been selected, remind user
 	if (feats.length == 0) {
@@ -413,13 +427,13 @@ $("#genScat").on("click", function() {
 
 			$("#welcome-scatter").remove();
 			$("welcome-tabs").remove();
-			// makeScatter([], feats[0]);
-			makeScatter([], "radius_mean,perimeter_mean")
+			makeScatter([], feats[0], fidx);
+			// makeScatter([], "radius_mean,perimeter_mean")
 
 		} else {
-			feats[0];
-			updateScatter([], "radius_mean,texture_mean")
-			// updateScatter([], feats[0]);
+			// updateScatter([], "radius_mean,texture_mean")
+			// console.log(feats[0]);
+			makeScatter([], feats[0], fidx);
 		}
 	}
 })

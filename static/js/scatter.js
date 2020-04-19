@@ -33,8 +33,9 @@ var sct_y = d3.scaleLinear()
 			.range([sc_height-30, 0]);
 
 
-var svg = d3.select("#scatter")
+var sc_svg = d3.select("#scatter")
 		.append("svg")
+			.attr("class", "sct")
 			.attr("width", sc_width)
 			.attr("height", sc_height)
 			.style("border", "2px solid #e8e8e8")
@@ -44,22 +45,26 @@ var svg = d3.select("#scatter")
 
 
 // collect data from api and build the scatter plot
-function makeScatter(idxs, feats) {
+function makeScatter(idxs, feats, fidx) {
+
+	var anoms = bc_data[fidx].anomalies;
+	console.log(anoms);
 
 	get_scatter_data(idxs, feats).then(function(res) {
-		console.log(res[0]);
-
 		// domains for the input from the data
 		sct_x.domain(d3.extent(res, function(d) { return +(d.x)}));
 		sct_y.domain(d3.extent(res, function(d) { return +(d.y)}));
 
 			// draw a point for each data point
-			svg.selectAll("circle")
-					.data(res)
-					.enter()
+		var svgCircles = d3.select(".sct").selectAll("circle")
+					.data(res, function(d) {
+						return d.x;
+					})
+
+			svgCircles.enter()
 					.append("circle")
-						.attr("id", function(d, i) {
-							return i;
+						.attr("id", function(d) {
+							return d.index;
 						})
 						.attr("r", "5px")
 						.attr("cx", function(d) {
@@ -69,56 +74,62 @@ function makeScatter(idxs, feats) {
 							return (sct_y(+(d.y)))
 						})
 						.style("fill", function(d) {
-							return colorUp(this.id);
+							if (anoms.includes(d.index)) {
+								return "orange";
+							} else {
+								return "gray";
+							}
 						})
 						.style("stroke-width", "1px")
 						.style("stroke", "white")
 						.style("opacity", 0)
 						.transition().duration(300)
 							.style("opacity", 1)
+
+			svgCircles.exit().remove()
 	})
 }
 
 // // update function. Anytime a change is made the data, the vis will get redrawn
 // // as long as you give it the updated data.
 
-function update(data) {
+function update(idxs, feats) {
 
-	sct_x.domain(d3.extent(data, function(d) { return +(d.x)}));
-	sct_y.domain(d3.extent(data, function(d) { return +(d.y)}));
-	var svgCircles = svg.selectAll("circle")
-					.data(data);
-
-	// draw a point for each data point
-		svgCircles.enter()
-			.append("circle")
-				.attr("id", function(d, i) {
-					return i;
-				})
-				.attr("r", "5px")
-				.attr("cx", function(d) {
-					return (sct_x(+(d.x)));
-				})
-				.attr("cy", function(d) {
-					return (sct_y(+(d.y)))
-				})
-				.style("fill", "gray")
-				.style("stroke", "white")
-				.style("stroke-width", "1px")
-				.style("opacity", 0)
-				.transition().duration(500)
-								.style("opacity", 1)
-
-	svgCircles.exit().remove();
-}
-
-function updateScatter(idxs, feats) {
 	get_scatter_data(idxs, feats).then(function(res) {
-		update(res);
+		
+		sct_x.domain(d3.extent(res, function(d) { return +(d.x)}));
+		sct_y.domain(d3.extent(res, function(d) { return +(d.y)}));
+
+		var svgCircles = sc_svg.selectAll("circle")
+						.data(res, function(d) {
+							return d.x;
+						});
+
+		// draw a point for each data point
+			svgCircles.enter()
+				.append("circle")
+					.attr("id", function(d, i) {
+						return d.index;
+					})
+					.attr("r", "5px")
+					.attr("cx", function(d) {
+						return (sct_x(+(d.x)));
+					})
+					.attr("cy", function(d) {
+						return (sct_y(+(d.y)))
+					})
+					.style("fill", "gray")
+					.style("stroke", "white")
+					.style("stroke-width", "1px")
+					.style("opacity", 0)
+					.transition().duration(500)
+									.style("opacity", 1)
+
+		svgCircles.exit().remove();
 	})
 }
 
-svg.append("g")
+sc_svg.append("g")
       .call(d3.brush().extent([[0, 0], [sc_width, sc_height]])
       	.on("brush", brushed)
       	.on("end", brushended));
@@ -149,7 +160,7 @@ function brushed() {
 					return "unselected";
 				}
 			})
-
+		// console.log(batch)
 		idMarks(batch);
 }
 
@@ -176,6 +187,7 @@ function brushended() {
 function idMarks(points) {
 	var pts = Object.values(batch);
 	d3.selectAll(".mark").style("fill", function(d) {
+		// console.log(d);
 		if (+this.id in pts)  {
 			return "blue";
 		} else {
