@@ -27,8 +27,6 @@ function makeLines(vars, ranges, prednum) {
 		var preds = res['predicates'];
 		var pred_ranges = preds[prednum];
 
-		// console.log(pred_ranges)
-
 		var data_for_lines = []
 
 		for (var i = 0; i < vars.length; i++) {

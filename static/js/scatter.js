@@ -21,28 +21,32 @@ var canvasW = $("#scatter").width();
 var canvasH = $("#scatter").height();
 
 // setting up dimensions for the scatter plot
-var margin = {top:10, right:10, bottom: 20, left:20},
-	sc_width = canvasW - margin.left - margin.right;
-	sc_height = canvasH - margin.top - margin.bottom;
+// var margin = {top:0, right:0, bottom:20, left:20},
+sc_width = canvasW-10;
+sc_height = canvasH-10;
 
 // ranges for the x and y axes on the screen
 var sct_x = d3.scaleLinear()
-			.range([0, sc_width-40]);
+			.range([25, (sc_width-25)]);
 
 var sct_y = d3.scaleLinear()
-			.range([sc_height-30, 0]);
-
+			.range([(sc_height-25), 30]);
 
 var sc_svg = d3.select("#scatter")
 		.append("svg")
 			.attr("class", "sct")
 			.attr("width", sc_width)
 			.attr("height", sc_height)
-			.style("border", "2px solid #e8e8e8")
-			.style("border-radius", "5px")
 			.append("g")
-				.attr("transform", "translate(" + (margin.left+10) + ", " + margin.top + ")")
+				.attr("transform", "translate(20, -20)")
 
+var xs = d3.scaleLinear();
+var xaxis = d3.axisBottom(xs);
+var plotx = d3.select(".sct").append("g")
+
+var ys = d3.scaleLinear();
+var yaxis = d3.axisLeft(ys);
+var ploty = d3.select(".sct").append("g")
 
 // collect data from api and build the scatter plot
 function makeScatter(idxs, feats, fidx) {
@@ -51,12 +55,23 @@ function makeScatter(idxs, feats, fidx) {
 	console.log(anoms);
 
 	get_scatter_data(idxs, feats).then(function(res) {
-		// domains for the input from the data
+
 		sct_x.domain(d3.extent(res, function(d) { return +(d.x)}));
 		sct_y.domain(d3.extent(res, function(d) { return +(d.y)}));
 
-			// draw a point for each data point
-		var svgCircles = d3.select(".sct").selectAll("circle")
+
+		xs.domain(d3.extent(res, function(d) { return +(d.x)}));
+		xs.range([0, (sc_width-20)]);
+		plotx.attr("transform", "translate(15," + (sc_height-20) +")")
+							.transition().duration(1000).call(xaxis.tickFormat(d3.format(".2f",)).tickSize(3))
+
+		ys.domain(d3.extent(res, function(d) { return +(d.y)}));
+		ys.range([(sc_height-30), 0]);
+		ploty.attr("transform", "translate(23, 5)")
+							.transition().duration(1000).call(yaxis.tickSize(2))
+
+		// draw a point for each data point
+		var svgCircles = d3.select(".sct").select("g").selectAll("circle")
 					.data(res, function(d) {
 						return d.x;
 					})
@@ -86,46 +101,10 @@ function makeScatter(idxs, feats, fidx) {
 						.transition().duration(300)
 							.style("opacity", 1)
 
-			svgCircles.exit().remove()
-	})
-}
 
-// // update function. Anytime a change is made the data, the vis will get redrawn
-// // as long as you give it the updated data.
 
-function update(idxs, feats) {
+		svgCircles.exit().remove()
 
-	get_scatter_data(idxs, feats).then(function(res) {
-		
-		sct_x.domain(d3.extent(res, function(d) { return +(d.x)}));
-		sct_y.domain(d3.extent(res, function(d) { return +(d.y)}));
-
-		var svgCircles = sc_svg.selectAll("circle")
-						.data(res, function(d) {
-							return d.x;
-						});
-
-		// draw a point for each data point
-			svgCircles.enter()
-				.append("circle")
-					.attr("id", function(d, i) {
-						return d.index;
-					})
-					.attr("r", "5px")
-					.attr("cx", function(d) {
-						return (sct_x(+(d.x)));
-					})
-					.attr("cy", function(d) {
-						return (sct_y(+(d.y)))
-					})
-					.style("fill", "gray")
-					.style("stroke", "white")
-					.style("stroke-width", "1px")
-					.style("opacity", 0)
-					.transition().duration(500)
-									.style("opacity", 1)
-
-		svgCircles.exit().remove();
 	})
 }
 
@@ -133,7 +112,6 @@ sc_svg.append("g")
       .call(d3.brush().extent([[0, 0], [sc_width, sc_height]])
       	.on("brush", brushed)
       	.on("end", brushended));
-
 
 function brushed() {
 	var s = d3.event.selection,
@@ -154,6 +132,7 @@ function brushed() {
 			.attr("class", function(d) {
 				if (sct_x(d.x) >= x0 && sct_x(d.x) <= dx && sct_y(d.y) >= y0 && sct_y(d.y) <= dy) {
 					batch[this.id] = +this.id;
+					console.log(d.y)
 					return "selected";
 				} else {
 					delete batch[this.id];

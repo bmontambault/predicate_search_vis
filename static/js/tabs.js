@@ -11,6 +11,7 @@ $(".go").on("click", function() {
 		if($("#welcome-tab").length) {
 			$("#welcome-tab").remove();
 			$("#welcome-scatter").remove();
+			console.log(feats[0]);
 			generateTabs([1, 2, 3, 4, 5], "radius_mean,perimeter_mean");
 
 		} else {

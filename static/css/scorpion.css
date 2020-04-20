@@ -172,6 +172,14 @@ footer {
 	height: 99%;
 	width: 44%;
 	justify-content: flex-start;
+	padding: none;
+	margin: none;
+}
+
+.sct {
+	padding:none;
+	margin: none;
+	border:none;
 }
 
 
@@ -181,8 +189,12 @@ footer {
 	justify-content: center;
 	align-items: center;
 	align-self: flex-start;
-	height: 80%;
+	padding:none;
+	margin: none;
+	height: 78%;
 	width: 100%;
+	margin-bottom: 5px;
+	box-shadow: 3px 3px 12px #888888;  
 
 }
 
@@ -207,6 +219,7 @@ footer {
 }
 
 .explain {
+	width: 100%;
 	position: relative;
 	z-index: -4;
 	display: flex;
@@ -355,13 +368,11 @@ footer {
 	color:white;
 }
 
-#welcome-scatter {
+/*#welcome-scatter {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	align-content: center;
-	width: 45%;
-	height: 30%;
 	background-color: white;
 	font-size: 16px;
 	color: gray;
@@ -370,3 +381,4 @@ footer {
 	transform: translateY(15);
 }
 
+*/
