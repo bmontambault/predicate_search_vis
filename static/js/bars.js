@@ -111,7 +111,7 @@ get_barcode_data([1, 2, 3, 4, 5], "radius_mean,perimeter_mean").then(function(re
 	stdSlider.noUiSlider.on('change', function() {
 		recolor();
 		d3.selectAll("circle").style("fill", function(d) {
-			console.log(this.id);
+
 			if ((+this.id) in bc_data[+this.id].anomalies) {
 					return "orange";
 				} else {
@@ -201,7 +201,7 @@ function makeBars(bc_data) {
 				.style("opacity", 0)
 				.attr("transform", "translate(17, 10)")
 				.on("mouseover", function(d) {
-					// console.log(bc_data[+this.id]);
+
 					div.transition()		
 		                .duration(300)		
 		                .style("opacity", 1);	
@@ -215,6 +215,9 @@ function makeBars(bc_data) {
 		                .style("top", (d3.event.pageY + 55) + "px");	
 				})
 				.on("mouseout", function() {
+					d3.select(this).style("fill", function(d) {
+						return colorUp(d);
+					})
 					div.transition()		
 		                .duration(500)		
 		                .style("opacity", 0);
@@ -273,9 +276,8 @@ function makeBars(bc_data) {
 				.attr("height", barcodeHeight)	
 				.attr("x", function(d) {
 					return 0;
-					// return x(d);
 				})
-				.style("fill", function(d) { // fill based on slider vals
+				.style("fill", function(d, i) { // fill based on slider vals
 					var value = stdSlider.noUiSlider.get();
 					if (d>=value) {
 						var dad_idx = d3.select(this.parentNode)._groups[0][0].id;
@@ -286,20 +288,31 @@ function makeBars(bc_data) {
 					}
 				})
 				.style("opacity", .7)
-				.on("mouseover", function(d) {
+				.on("mouseover", function(d, i) {
 					var currid = this.id;
 					d3.selectAll(".mark").style("fill", function(d) {
 						if (this.id == currid) {
 							return "blue";
 						} else {
-							return colorUp(this.id);
+							return colorUp(d);
 						}
 					});
 					d3.selectAll("circle").style("fill", function(d) {
-						if (this.id == currid) {
+						if (currid == d.index) {
 							return "blue";
 						} else {
-							return colorUp(d);
+							if (anoms.includes(d.index)) {
+								return "orange";
+							} else {
+								return "gray";
+							}
+						}
+					})
+					d3.selectAll("circle").style("opacity", function(d) {
+						if (currid == d.index) {
+							return 1;
+						} else {
+							return .5;
 						}
 					})
 				})
@@ -308,7 +321,14 @@ function makeBars(bc_data) {
 						return colorUp(d);
 					});
 					d3.selectAll(".unselected").style("fill", "gray");
-					d3.selectAll("circle").style("fill", "gray");
+					d3.selectAll("circle").style("fill", function(d) {
+						if (anoms.includes(d.index)) {
+								return "orange";
+							} else {
+								return "gray";
+							}
+					});
+					d3.selectAll("circle").style("opacity", 1)
 				})
 				.on("click", function() {
 					var currid = this.id;

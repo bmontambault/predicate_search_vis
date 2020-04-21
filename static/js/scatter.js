@@ -42,17 +42,17 @@ var sc_svg = d3.select("#scatter")
 
 var xs = d3.scaleLinear();
 var xaxis = d3.axisBottom(xs);
-var plotx = d3.select(".sct").append("g")
+var plotx = d3.select(".sct").append("g");
 
 var ys = d3.scaleLinear();
 var yaxis = d3.axisLeft(ys);
-var ploty = d3.select(".sct").append("g")
+var ploty = d3.select(".sct").append("g");
+var anoms = [];
 
 // collect data from api and build the scatter plot
 function makeScatter(idxs, feats, fidx) {
 
-	var anoms = bc_data[fidx].anomalies;
-	console.log(anoms);
+	anoms = bc_data[fidx].anomalies;
 
 	get_scatter_data(idxs, feats).then(function(res) {
 
@@ -122,24 +122,26 @@ function brushed() {
 
 	d3.selectAll("circle")
 			.style("fill", function(d) {
-
 				if (sct_x(d.x) >= x0 && sct_x(d.x) <= dx && sct_y(d.y) >= y0 && sct_y(d.y) <= dy) {
 					return "blue";
 				} else {
-					return "gray";
+					if (anoms.includes(d.index)) {
+						return "orange";
+					} else {
+						return "gray";
+					}
 				}
 			})
 			.attr("class", function(d) {
 				if (sct_x(d.x) >= x0 && sct_x(d.x) <= dx && sct_y(d.y) >= y0 && sct_y(d.y) <= dy) {
 					batch[this.id] = +this.id;
-					console.log(d.y)
 					return "selected";
 				} else {
 					delete batch[this.id];
 					return "unselected";
 				}
 			})
-		// console.log(batch)
+
 		idMarks(batch);
 }
 
@@ -152,7 +154,11 @@ function brushended() {
 			.duration(150)
 			.ease(d3.easeLinear)
 			.style("fill", function(d) {
-				return colorUp(this.id);
+				if (anoms.includes(d.index)) {
+					return "orange";
+				} else {
+					return "gray";
+				}
 			})
 		}
 
@@ -166,18 +172,17 @@ function brushended() {
 function idMarks(points) {
 	var pts = Object.values(batch);
 	d3.selectAll(".mark").style("fill", function(d) {
-		// console.log(d);
-		if (+this.id in pts)  {
+		if (pts.includes(+this.id))  {
 			return "blue";
 		} else {
-			return "#e8e8e8";
+			return "gray";
 		}
 	})
 	d3.selectAll(".mark").style("opacity", function(d) {
-		if (+this.id in pts)  {
+		if (pts.includes(+this.id))  {
 			return 1;
 		} else {
-			return 0;
+			return .2;
 		}
 	})
 }
