@@ -26,8 +26,8 @@ var div = d3.select("body").append("div")
 
 // set dimensions of the barcode vis
 var barcodeWidth = $("#bars").width()-40;
-var barsheight = $("#bars").height()-10;
-var barcodeHeight = 32;
+var barsheight = $("#bars").height();
+var barcodeHeight = 36;
 
 // set visual domain of the x axis of the barcode charts
 var bar_x = d3.scaleLinear()
@@ -199,9 +199,8 @@ function makeBars(bc_data) {
 				.attr("height", barcodeHeight)
 				.style("background-color", "#e8e8e8")
 				.style("opacity", 0)
-				.attr("transform", "translate(17, 10)")
+				.attr("transform", "translate(15, 0)")
 				.on("mouseover", function(d) {
-
 					div.transition()		
 		                .duration(300)		
 		                .style("opacity", 1);	
@@ -248,14 +247,14 @@ function makeBars(bc_data) {
 					}
 				})
 						
-
 		d3.selectAll(".barcode").transition()
-									.delay(function(d, i) {
-										return 50*i;
-									})
-									.attr("transform", "translate(17, 0)")
-									.style("opacity", 1)
-
+							.delay(function(d, i) {
+								return 50*i;
+							})
+							.attr("transform", function(d, i) {
+								return "translate(15, " + (i*1) + ")";
+							})
+							.style("opacity", 1)
 
 		svgs.exit().remove();
 // 	//Add little barcode marks per respective feaure svg

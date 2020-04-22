@@ -11,8 +11,8 @@ function get_line_data(index, targets){
     });
 }
 
-var lineChartWidth = $("#sml-mpls").width() - 20;
-var lineChartHeight = 150;
+var lineChartWidth = $("#sml-mpls").width()-10;
+var lineChartHeight = 185;
 
 
 function makeLines(vars, ranges, prednum) {
@@ -55,15 +55,19 @@ function makeLines(vars, ranges, prednum) {
 				.attr("width", lineChartWidth)
 				.attr("height", lineChartHeight)
 				.style("background-color", "#e8e8e8")
+				.style("padding-left", 3)
 				.append("g")
 				.append("text")
-						.attr("x", 5)
+						.attr("x", lineChartWidth/2)
 						.attr("y", 15)
+						.attr("text-anchor", "middle")
 						.attr("font-size", "12px")
 						.attr("color", "gray")
 						.text(function(d, i) {
 							return d.key;
 						})
+
+	var plot_ly = d3.selectAll(".linez").append("g").attr("class", "yaxis");
 
 		d3.selectAll(".linez").on("mouseover", function(d, i) {
 
@@ -88,8 +92,9 @@ function makeLines(vars, ranges, prednum) {
 
 		lsvgs.exit().remove();
 
-		var lx = d3.scaleLinear().range([0, (lineChartWidth-5)]);
-		var ly = d3.scaleLinear().range([(lineChartHeight-5), 0]);
+		var lx = d3.scaleLinear().range([18, (lineChartWidth-5)]);
+		var ly = d3.scaleLinear().range([(lineChartHeight-5), 18]);
+		var ly_axis = d3.axisLeft(ly)
 
 		lx.domain([0, actual[0].value.line_data.length]);
 
@@ -112,6 +117,7 @@ function makeLines(vars, ranges, prednum) {
 						.attr("class", "vlines")
 						.attr("d", function(d) {
 							ly.domain([0, d3.max(d.value.line_data)]);
+							plot_ly.call(ly_axis.tickSize(0).tickSizeInner(-2)).attr("transform", "translate(18, -10)")
 							return vline(d.value.line_data);
 						})
 						.style("fill", "none")
@@ -121,7 +127,7 @@ function makeLines(vars, ranges, prednum) {
 
 		var toplines = d3.selectAll(".linez").append("rect")
 								.attr("class", "topline")
-								.attr("x", 0)
+								.attr("x", 16)
 								.attr("y", function(d) {
 
 									var curr_range = pred_ranges[d.key];
@@ -130,7 +136,7 @@ function makeLines(vars, ranges, prednum) {
 									return ly(right);
 
 								})
-								.attr("width", lineChartWidth)
+								.attr("width", lineChartWidth-12)
 								.attr("height", function(d) {
 
 									var curr_range = pred_ranges[d.key];
@@ -149,43 +155,13 @@ function makeLines(vars, ranges, prednum) {
 
   		var xaxes = d3.selectAll(".linez").append("g")
   						.attr("class", "axis")
-  						.attr("transform", "translate(3," + (lineChartHeight-16) + ")")
+  						.attr("transform", "translate(2," + (lineChartHeight-14) + ")")
   						.call(d3.axisBottom(lx)
   							.tickFormat(d3.format(".0f",))
-        					.tickSize(3));
+        					.tickSize(2));
 					
 
 		vlines.exit().remove();
-
-	d3.selectAll(".linez").append("g")
-      .call(d3.brush().extent([[0, 0], [lineChartWidth, lineChartHeight]])
-      	.on("brush", brushed)
-      	.on("end", brushended));
-
-
-     function brushed() {
-	var s = d3.event.selection,
-				x0 = s[0][0],
-				y0 = s[0][1],
-				dx = s[1][0],
-				dy = s[1][1];
-
-}
-
-function brushended() {
-	if (!d3.event.selection) {
-
-		d3.selectAll("circle")
-			.transition()
-			.duration(150)
-			.ease(d3.easeLinear)
-			.style("fill", function(d) {
-				return "gray";
-				// return colorUp(this.id);
-			})
-		}
-	
-}
 
 	})
 

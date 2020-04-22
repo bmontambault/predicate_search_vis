@@ -47,12 +47,17 @@ var plotx = d3.select(".sct").append("g");
 var ys = d3.scaleLinear();
 var yaxis = d3.axisLeft(ys);
 var ploty = d3.select(".sct").append("g");
+
+var xlabel = d3.select(".sct").append("g");
+var ylabel = d3.select(".sct").append("g");
+
 var anoms = [];
 
 // collect data from api and build the scatter plot
 function makeScatter(idxs, feats, fidx) {
 
 	anoms = bc_data[fidx].anomalies;
+	console.log(feats)
 
 	get_scatter_data(idxs, feats).then(function(res) {
 
@@ -61,14 +66,28 @@ function makeScatter(idxs, feats, fidx) {
 
 
 		xs.domain(d3.extent(res, function(d) { return +(d.x)}));
-		xs.range([0, (sc_width-20)]);
-		plotx.attr("transform", "translate(15," + (sc_height-20) +")")
+		xs.range([0, (sc_width-50)]);
+		plotx.attr("transform", "translate(35," + (sc_height-35) +")")
 							.transition().duration(1000).call(xaxis.tickFormat(d3.format(".2f",)).tickSize(3))
 
 		ys.domain(d3.extent(res, function(d) { return +(d.y)}));
-		ys.range([(sc_height-30), 0]);
-		ploty.attr("transform", "translate(23, 5)")
+		ys.range([(sc_height-40), 0]);
+		ploty.attr("transform", "translate(35, 5)")
 							.transition().duration(1000).call(yaxis.tickSize(2))
+
+		xlabel.append("text")
+						.attr("text-anchor", "middle")
+						.attr("transform", "translate(" + (sc_width*.5) + ", " + (sc_height-4) + ")")
+						.attr("dx", ".65em")
+						.text(feats + " z-score");
+
+		ylabel.append("text")
+						.attr("text-anchor", "middle")
+						.attr("y", 4)
+						.attr("x", -(sc_height/2))
+						.attr("dy", ".55em")
+						.attr("transform", "rotate(-90)")
+						.text("data point ID")
 
 		// draw a point for each data point
 		var svgCircles = d3.select(".sct").select("g").selectAll("circle")
