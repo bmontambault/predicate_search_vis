@@ -142,11 +142,14 @@ function makeLines(vars, ranges, prednum) {
 									var curr_range = pred_ranges[d.key];
 									var left = curr_range[0][0];
 									var right = curr_range[0][1];
+									var absright = Math.abs(ly(right))
+									var absleft = Math.abs(ly(left))
+									console.log(absright, absleft)
 
-									if ((ly(right) - ly(left)) == 0) {
+									if ((Math.abs(absright - absleft)) <= 2) {
 										return 2;
 									} else {
-										return (ly(right) - ly(left));
+										return (Math.abs(absright - absleft));
 									}
 								})
 								.style("fill", "orange")
