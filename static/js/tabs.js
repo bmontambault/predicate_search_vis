@@ -5,7 +5,7 @@
 $(".go").on("click", function() {
 
 	var feats = Object.values(selectedFeats);
-	// var idxs = Object.keys(selectedFeats);
+	var idxs = Object.keys(selectedFeats);
 	// console.log(feats[0])
 	if (feats.length == 0) {
 		alert("Please choose a target variable from the barcode panel.");
@@ -15,17 +15,23 @@ $(".go").on("click", function() {
 			$("#welcome-scatter").remove();
 
 			// console.log(feats[0]);
-			generateTabs([1, 2, 3, 4, 5], "radius_mean,perimeter_mean");
+			generateTabs(idxs, feats);
 
 		} else {
 			// feats[0];
-			generateTabs([4, 5, 8, 9, 14], "radius_mean,perimeter_mean");
+			generateTabs(idxs, feats);
 		}
 	}
 })
 
 
 function get_preds(index, targets){
+
+    var selected = document.getElementsByClassName("selected")
+    var index = []
+    for (var i=0; i<selected.length; i++){
+        index.push(selected[i].id)
+    }
 
     return $.ajax({
         url: 'http://localhost:5000/get_predicates',
@@ -46,6 +52,13 @@ function generateTabs(idxs, feats) {
 
 	get_preds(idxs, feats).then(function(res) {
 
+        var tabs = document.getElementsByClassName('tabs')[0]
+        var explain = document.getElementsByClassName('explain')[0]
+        var sml_mpls = document.getElementById('sml-mpls')
+        tabs.innerHTML = ''
+        explain.innerHTML = ''
+        sml_mpls.innerHTML = ''
+
         predicates = res['predicates'];
 
     	var frst_elemid = 0;
@@ -59,7 +72,6 @@ function generateTabs(idxs, feats) {
 		var first_feats = Object.keys(predicates[0]);
 		var first_ranges = Object.values(predicates[0]);
 		for (var k = 0; k < first_feats.length; k++) {
-
 			var child = first_feats[k] + ": " + first_ranges[k] + "<br>";
 			$(".explain").append(child);
 		}
@@ -82,7 +94,13 @@ function generateTabs(idxs, feats) {
 
 			$(".explain").html(function() {
 				for (var k = 0; k < curr_feats.length; k++) {
-					child += curr_feats[k] + ": " + curr_ranges[k] + "<br>";
+				    var l = curr_ranges[k][0][0]
+				    var r = curr_ranges[k][0][1]
+				    if (l != r){
+				        child += curr_feats[k] + ": " + curr_ranges[k] + "<br>";
+				    } else {
+				        child += curr_feats[k] + ": " + l + "<br>";
+				    }
 				}
 				return child;
 			})

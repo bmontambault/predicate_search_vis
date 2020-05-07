@@ -82,7 +82,11 @@ function makeLines(vars, ranges, prednum) {
 						var left = curr_range[0][0];
 						var right = curr_range[0][1];
 
-		            line_div.html("<b>" + this.id +"</b>" + "<br>" + right + "<br>" + left)
+                    if (right == left){
+                        line_div.html("<b>" + this.id +"</b>" + "<br>" + right)
+                    } else {
+		                line_div.html("<b>" + this.id +"</b>" + "<br>" + right + "<br>" + left)
+		            }
 				})
 				.on("mouseout", function() {
 					line_div.transition()		

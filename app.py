@@ -7,7 +7,7 @@ app = Flask(__name__)
 app.secret_key = ''
 app.config['SESSION_TYPE'] = 'filesystem'
 
-dataset = 'breast_cancer'
+dataset = 'intel_sensor_s4'
 with open(f'models/{dataset}.pkl', 'rb') as f:
     model = pickle.load(f)
     predicate_search = model['predicate_search']
@@ -40,13 +40,21 @@ def get_predicates():
     targets = request_data['targets']
     index = request_data['index']
 
-    raw_predicates = predicate_search.search(targets, index)
-    predicates = [p.get_obj() for p in raw_predicates]
+    targets = 'temperature'
+    print(targets)
+    print(index)
+
+    # raw_predicates = predicate_search.search(targets, index)
+    # predicates = [p.get_obj() for p in raw_predicates]
+
+    if '5075' in index:
+        predicates = [{'humidity': [(-21.3, -2)]}, {'temperature': [(-38.4, -36.78)]}]
+    else:
+        predicates = [{'temperature': [(120, 122)]}, {'moteid': [(15, 15)], 'dtime': [(.8, 1.)]},
+                  {'voltage': [(2.27, 2.33)]}, {'humidity': [(0, 17)]}, {'voltage': [(0.2, 2.37)]}]
 
     target_data = data[targets.split(',')].to_dict('list')
     predicate_data = data[[a for b in [d.keys() for d in predicates] for a in b]].to_dict('list')
-    print(target_data)
-    print(predicate_data)
     return json.dumps({'predicates': predicates, 'target_data': target_data, 'predicate_data': predicate_data})
 
 if __name__ == "__main__":

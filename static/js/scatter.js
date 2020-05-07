@@ -1,6 +1,5 @@
 
 function get_scatter_data(index, targets){
-
     return $.ajax({
     	url: 'http://localhost:5000/get_projections',
         type: "POST",
